@@ -1,0 +1,87 @@
+h2 {color: #3498db; text-align: center; margin-bottom: 20px; font-size: 50px;}
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; display: flex; align-items: center;
+  justify-content: center;}
+.container {background-color: #fdff90; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); border-radius: 8px; overflow: hidden; width: 1000px; max-width: 1500px; padding: 20px;
+  box-sizing: border-box; position: relative;}
+label {display: block; margin: 10px 0 5px; color: #000000; font-size: 20px;}
+select, input, button { width: 100%; padding: 10px; margin: 5px 0 15px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+button {background-color: rgb(27, 161, 9); color: rgb(0, 0, 0); cursor: pointer; font-size: 20px; margin-top: 1px;}
+.settings-button{background-color: rgb(243, 105, 105); color: rgb(0, 0, 0); cursor: pointer; font-size: 20px; margin-top: 1px;}
+.settings-button:hover{background-color: rgb(130, 105, 243);}
+button:hover {background-color: #99f89e;}
+.desk-grid {display: grid; grid-template-columns: repeat(30, 1fr); grid-gap: 2px; margin-top: 5px; background-size: cover; border-radius: 5px; overflow: hidden;}
+/* ;} //   background-image: url('https://www.roomsketcher.com/content/uploads/2021/12/RoomSketcher-Office-Floor-Plan-PID3529710-2D-bw-with-Labels.jpg') */
+.desk-icon { width: 30px; height: 30px; background-color: #3498db; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: rgb(0, 0, 0);
+  font-weight: bold; cursor: pointer; transition: background-color 0.3s;}
+.desk-icon.selected {background-color: #27ae60;}
+.desk-icon:hover {background-color: #f1ffb2;}
+.desk-icon.booked {background-color: red;}
+.confirmation {margin-top: 20px; font-weight: bold; color: green;}
+.location-image {height: 100px; width: 150px; position: absolute; top: 0; left: 0; transform: translate(0, 0);}
+.office-image {width: 500px; height: 500px;}
+.timer {position: absolute; top: 0; right: 0; padding: 10px; font-size: 16px; color: #555;}
+.time-inputs {display: flex; gap: 5px;}
+.popup {display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center;}
+.popup-content {background-color: #fff; padding: 20px; border-radius: 8px; text-align: center; position: relative;}
+.close {position: absolute; top: 10px; right: 10px; cursor: pointer; }
+.row {
+display: flex;
+gap: 20px;
+flex-wrap: wrap; /* Allow items to wrap to the next line */
+}
+
+.input-container {
+text-align: center;
+flex: 1; /* Each input container takes equal space */
+}
+
+/* Additional style for responsiveness */
+@media (max-width: 600px) {
+.input-container {
+flex: 100%; /* On smaller screens, take up full width */
+}
+}
+#office, #floor, #selectedDesk {flex: 1;}
+body.dark-mode {background-color: #222; color: #fff;}
+.popup.dark-mode {background: rgba(255, 255, 255, 0.2);}
+.popup-content.dark-mode {background-color: #333; color: #fff;}
+.close.dark-mode {color: #fff;}
+
+/* Add this style to your existing style section or in a separate style tag */
+.burger-bar {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 10px;
+background-color: #3498db; /* Change the background color as needed */
+color: #fff;
+position: absolute; /* Add this line to make it absolute */
+top: 10px; /* Adjust the top position as needed */
+right: 10px; /* Adjust the right position as needed */
+z-index: 2; /* Add this line to ensure it's above other elements */
+}
+.burger-icon {
+cursor: pointer;
+display: flex;
+flex-direction: column;
+}
+
+.bar {
+width: 40px;
+height: 5px;
+background-color: #fff;
+margin: 4px;
+}
+
+.menu {
+display: none;
+flex-direction: column;
+top: 10px; /* Adjust the top position as needed */
+right: 10px; /* Adjust the right position as needed */
+}
+
+.menu a {
+text-decoration: none;
+color: #fff;
+margin: 10px;
+}

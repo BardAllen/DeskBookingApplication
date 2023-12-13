@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <title>Desk Booking</title>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+  <link rel="icon" href="faviconICO.ico" type="image/png">
+  <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script type="text/javascript">
+  function googleTranslateElementInit() {new google.translate.TranslateElement({ pageLanguage: 'en', autoDisplay: false }, 'google_translate_element');}
+</script>
+
+
+
+</head>
+<body>
+
+<div class="timer" id="timer">00:00</div>
+
+
+<div class="container">
+
+<div class="burger-bar">
+<div class="burger-icon" onclick="toggleMenu()">
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+</div>
+<div class="menu">
+<!-- Add your menu items here -->
+<a href="#Settings" onclick="openSettings()">Settings</a>
+<a href="#Generate-Report" onclick="openGenerateReport()">Generate Report</a>
+<a href="#Cancel-Booking" onclick="cancelDesk()" >Cancel Booking</a>
+</div>
+</div>
+
+<h2>Desk Booking</h2>
+
+<!-- <div class="user-info">
+  <label style="text-align: center; font-size:15px;" id="usernameLabel">A160634</label>
+</div>
+ -->
+
+
+<div style="text-align: center;">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Aviva_Logo.svg/1280px-Aviva_Logo.svg.png" alt="Location Image" class="location-image" id="locationImage">
+  </div>
+
+ 
+<div class="row">
+  <div class="input-container">
+    <label for="office">Office Location</label>
+    <select style="text-align: center; font-size: 17px; font-weight: bold;" id="office" onchange="showDesks()">
+      <option value="NULL"></option>
+      <option value="Hoxton">Hoxton</option>
+      <option value="Leeds">Leeds</option>
+      <option value="Manchester">Manchester</option>
+      <option value="Perth">Perth</option>
+    </select>
+  </div>
+
+  <div class="input-container">
+    <label for="floor">Floor Level</label>
+    <select style="text-align: center; font-size: 20px; font-weight: bold;" id="floor"></select>
+  </div>
+
+  <div class="input-container">
+    <label for="bookingDate">Booking Date</label>
+    <div class="time-inputs">
+      <input style="text-align: center; font-size: 20px; font-weight: bold; width: 400px" type="date" id="bookingDate" required>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+<!-- // <button style="margin-top: 10px" onclick="displayArray()">Test Button</button> -->
+<!-- <button style="margin-top: 10px" class="settings-button" onclick="openSettings()">Settings</button>   -->
+
+
+
+
+<div class="row">
+<label style="text-align: center";>Selected Desk</label>
+<input style="text-align: center; background-color: lightgreen; color: black; font-size: 50px; font-weight: bold; height: 70px;  font-family: 'Courier New', monospace;" type="text" id="selectedDesk" readonly>
+<label id="desksAvailable"></label>
+<label id="desksRemaining"></label>
+</div>
+<div class="button-container">
+<button class="bookingButton" onclick="bookDesk()" role="button">Book Desk</button>
+</div>
+
+
+
+<div style="font-size:30px;" id="coordinates-display"></div>
+<div id="map"></div>
+
+<select id="desk" style="display: none;">
+</select>
+<div class="desk-grid" id="deskGrid"></div>
+<div class="row">
+</div>
+</div>
+</div>
+<!-- // ##############################################################################
+//      ######################## CONFIRMATION POPUP  #####################################
+//      ############################################################################## -->
+<div id="confirmationPopup" class="popup">
+<div class="popup-content">
+<span class="close"  onclick="closeConfirmationPopup()">&times;</span>
+<p style="text-align: center; font-size: 40px; font-weight: bold;"  class="confirmation" id="confirmationMessage"></p>
+<img src=""  class="office-image" alt="Confirmation Image" id="confirmationImage" style="max-width: 100%; height: auto;">
+<button onclick="closeConfirmationPopup()">OK</button>
+</div>
+</div>
+<!-- // ##############################################################################
+//      ######################## SETTINGS  ###########################################
+//      ############################################################################## -->
+<div id="settingsPopup" class="popup">
+<div class="popup-content">
+<span class="close"  onclick="closeSettingsPopup()">&times;</span>
+<h2>Settings</h2>
+<div class="font-size-buttons">
+  <button class="button-89" style="background-color: rgb(248, 144, 144)" onclick="decreaseFontSize()">Decrease Font Size</button>
+  <button class="button-89" style="background-color: rgb(201, 255, 157)" onclick="increaseFontSize()">Increase Font Size</button>
+</div>
+<button class="button-89" style="background-color: rgb(94, 94, 94); color: white;" onclick="toggleDarkMode()">Dark Mode</button>
+<label for="languageSelect">Select Language:</label>
+<div style="font-size:40px" id="google_translate_element"></div>
+<button  class="button-89"  onclick="closeSettingsPopup()">Close</button>
+</div>
+</div>
+<!-- // ##############################################################################
+//      ######################## GENERATE REPORT #####################################
+//      ############################################################################## -->
+<div id="generateReportPopup" class="popup">
+  <div class="popup-content">
+    <span class="close" onclick="closeGenerateReport()">&times;</span>
+    <h2>Generate Report</h2>
+    <div class="font-size-buttons">
+    <button class="button-89" style="background-color: rgb(168, 255, 97)" onclick="generateDeskBookingReportYesterday()">Yesterday's Bookings</button>
+    <button class="button-89" style="background-color: rgb(202, 233, 176)" onclick="generateDeskBookingReportToday()">Today's Bookings</button>
+    <button class="button-89" style="background-color: rgb(245, 147, 147)" onclick="generateDeskBookingReportTomorrow()">Tomorrow's Bookings</button>
+    <button class="button-89" style="background-color: rgb(126, 242, 250)" onclick="generateDeskBookingReportThisWeek()">This Week's Bookings</button>
+    <button class="button-89" style="background-color: rgb(245, 159, 212)" onclick="generateDeskBookingReportToday()">This Month's Bookings</button>
+    <button class="button-89" style="background-color: rgb(194, 107, 235)" onclick="generateDeskBookingReportToday()">This Year's Bookings</button>
+  </div>
+
+    <label style="font-size: 40px" id="reportTitle"></label>
+    <div style="height: 400px; overflow-y: auto;" id="scrollableBox">
+      <label id="reportText"></label>
+    </div>
+  </div>
+  <div class="font-size-buttons">
+  <button class="button-89" style="background-color: rgb(240, 98, 93)" onclick="closeGenerateReport()">Close Reports</button>
+  <button class="button-89" style="background-color: rgb(165, 156, 255)" onclick="emailReport()">Email Report</button>
+  <button class="button-89" style="background-color: rgb(138, 247, 49)" onclick="exportToExcel()">Export to Excel</button>
+</div>
+</div>
+
+
+<script>
+var map; // Declare map variable outside the function
+var imageOverlay; // Declare imageOverlay variable outside the function
+
+document.addEventListener('keydown', function (event) {
+  // Check if the hotkey is pressed (Ctrl+C in this case)
+  if (event.ctrlKey && event.key === 'c') {
+    // Get the coordinates from the 'coordinates-display' element
+    const coordinates = document.getElementById('coordinates-display').innerHTML;
+
+    // Create a temporary textarea element to hold the coordinates text
+    const textarea = document.createElement('textarea');
+    textarea.value = coordinates;
+    document.body.appendChild(textarea);
+
+    // Select the text in the textarea
+    textarea.select();
+    textarea.setSelectionRange(0, 99999); // For mobile devices
+
+    // Execute the copy command
+    document.execCommand('copy');
+
+    // Remove the temporary textarea
+    document.body.removeChild(textarea);
+
+    // Optionally, you can provide some visual feedback to the user
+
+  }
+});
+
+
+var greenIcon = L.icon({
+    iconUrl: 'deskIconAvailable.png',
+    iconSize:     [25, 25], // size of the icon
+
+});
+
+var redIcon = L.icon({
+  iconUrl: 'deskNotAvailable.jpg',
+    iconSize:     [25, 25], // size of the icon
+
+});
+
+function addMarker(lat, lng, popupContent) {
+    var marker = L.marker([lat, lng]).bindPopup(popupContent);
+    markers.push(marker);
+    return marker;
+}
+
+{
+var marker1 = L.marker([0, 0]);
+var marker2 = L.marker([0, 0]);
+var marker3 = L.marker([0, 0]);
+var marker4 = L.marker([0, 0]);
+var marker5 = L.marker([0, 0]);
+var marker6 = L.marker([0, 0]);
+var marker7 = L.marker([0, 0]);
+var marker8 = L.marker([0, 0]);
+var marker9 = L.marker([0, 0]);
+var marker10 = L.marker([0, 0]);
+var marker11 = L.marker([0, 0]);
+var marker12 = L.marker([0, 0]);
+var marker13 = L.marker([0, 0]);
+var marker14 = L.marker([0, 0]);
+var marker15 = L.marker([0, 0]);
+var marker16 = L.marker([0, 0]);
+var marker17 = L.marker([0, 0]);
+var marker18 = L.marker([0, 0]);
+var marker19 = L.marker([0, 0]);
+var marker20 = L.marker([0, 0]);
+var marker21 = L.marker([0, 0]);
+var marker22 = L.marker([0, 0]);
+var marker23 = L.marker([0, 0]);
+var marker24 = L.marker([0, 0]);
+var marker25 = L.marker([0, 0]);
+var marker26 = L.marker([0, 0]);
+var marker27 = L.marker([0, 0]);
+var marker28 = L.marker([0, 0]);
+var marker29 = L.marker([0, 0]);
+var marker30 = L.marker([0, 0]);
+var marker31 = L.marker([0, 0]);
+var marker32 = L.marker([0, 0]);
+var marker33 = L.marker([0, 0]);
+var marker34 = L.marker([0, 0]);
+var marker35 = L.marker([0, 0]);
+var marker36 = L.marker([0, 0]);
+var marker37 = L.marker([0, 0]);
+var marker38 = L.marker([0, 0]);
+var marker39 = L.marker([0, 0]);
+var marker40 = L.marker([0, 0]);
+var marker41 = L.marker([0, 0]);
+var marker42 = L.marker([0, 0]);
+var marker43 = L.marker([0, 0]);
+var marker44 = L.marker([0, 0]);
+var marker45 = L.marker([0, 0]);
+var marker46 = L.marker([0, 0]);
+var marker47 = L.marker([0, 0]);
+var marker48 = L.marker([0, 0]);
+var marker49 = L.marker([0, 0]);
+var marker50 = L.marker([0, 0]);
+var marker51 = L.marker([0, 0]);
+var marker52 = L.marker([0, 0]);
+var marker53 = L.marker([0, 0]);
+var marker54 = L.marker([0, 0]);
+var marker55 = L.marker([0, 0]);
+var marker56 = L.marker([0, 0]);
+var marker57 = L.marker([0, 0]);
+var marker58 = L.marker([0, 0]);
+var marker59 = L.marker([0, 0]);
+var marker60 = L.marker([0, 0]);
+var marker61 = L.marker([0, 0]);
+var marker62 = L.marker([0, 0]);
+var marker63 = L.marker([0, 0]);
+var marker64 = L.marker([0, 0]);
+var marker65 = L.marker([0, 0]);
+var marker66 = L.marker([0, 0]);
+var marker67 = L.marker([0, 0]);
+var marker68 = L.marker([0, 0]);
+var marker69 = L.marker([0, 0]);
+var marker70 = L.marker([0, 0]);
+var marker71 = L.marker([0, 0]);
+var marker72 = L.marker([0, 0]);
+var marker73 = L.marker([0, 0]);
+var marker74 = L.marker([0, 0]);
+var marker75 = L.marker([0, 0]);
+var marker76 = L.marker([0, 0]);
+var marker77 = L.marker([0, 0]);
+var marker78 = L.marker([0, 0]);
+var marker79 = L.marker([0, 0]);
+var marker80 = L.marker([0, 0]);
+var marker81 = L.marker([0, 0]);
+var marker82 = L.marker([0, 0]);
+var marker83 = L.marker([0, 0]);
+var marker84 = L.marker([0, 0]);
+var marker85 = L.marker([0, 0]);
+var marker86 = L.marker([0, 0]);
+var marker87 = L.marker([0, 0]);
+var marker88 = L.marker([0, 0]);
+var marker89 = L.marker([0, 0]);
+var marker90 = L.marker([0, 0]);
+var marker91 = L.marker([0, 0]);
+var marker92 = L.marker([0, 0]);
+var marker93 = L.marker([0, 0]);
+var marker94 = L.marker([0, 0]);
+var marker95 = L.marker([0, 0]);
+var marker96 = L.marker([0, 0]);
+var marker97 = L.marker([0, 0]);
+var marker98 = L.marker([0, 0]);
+var marker99 = L.marker([0, 0]);
+var marker100 = L.marker([0, 0]);
+var marker101 = L.marker([0, 0]);
+var marker102 = L.marker([0, 0]);
+var marker103 = L.marker([0, 0]);
+var marker104 = L.marker([0, 0]);
+var marker105 = L.marker([0, 0]);
+var marker106 = L.marker([0, 0]);
+var marker107 = L.marker([0, 0]);
+var marker108 = L.marker([0, 0]);
+var marker109 = L.marker([0, 0]);
+var marker110 = L.marker([0, 0]);
+var marker111 = L.marker([0, 0]);
+var marker112 = L.marker([0, 0]);
+var marker113 = L.marker([0, 0]);
+var marker114 = L.marker([0, 0]);
+var marker115 = L.marker([0, 0]);
+var marker116 = L.marker([0, 0]);
+var marker117 = L.marker([0, 0]);
+var marker118 = L.marker([0, 0]);
+var marker119 = L.marker([0, 0]);
+var marker120 = L.marker([0, 0]);
+var marker121 = L.marker([0, 0]);
+var marker122 = L.marker([0, 0]);
+var marker123 = L.marker([0, 0]);
+var marker124 = L.marker([0, 0]);
+var marker125 = L.marker([0, 0]);
+var marker126 = L.marker([0, 0]);
+var marker127 = L.marker([0, 0]);
+var marker128 = L.marker([0, 0]);
+var marker129 = L.marker([0, 0]);
+var marker130 = L.marker([0, 0]);
+var marker131 = L.marker([0, 0]);
+var marker132 = L.marker([0, 0]);
+var marker133 = L.marker([0, 0]);
+var marker134 = L.marker([0, 0]);
+var marker135 = L.marker([0, 0]);
+var marker136 = L.marker([0, 0]);
+var marker137 = L.marker([0, 0]);
+var marker138 = L.marker([0, 0]);
+var marker139 = L.marker([0, 0]);
+var marker140 = L.marker([0, 0]);
+var marker141 = L.marker([0, 0]);
+var marker142 = L.marker([0, 0]);
+var marker143 = L.marker([0, 0]);
+var marker144 = L.marker([0, 0]);
+var marker145 = L.marker([0, 0]);
+var marker146 = L.marker([0, 0]);
+var marker147 = L.marker([0, 0]);
+var marker148 = L.marker([0, 0]);
+var marker149 = L.marker([0, 0]);
+var marker150 = L.marker([0, 0]);
+}
+
+function createMap() {
+  const selectedFloor = document.getElementById('floor').value;
+  const selectedOffice = document.getElementById('office').value;
+  var imageUrl = ''; // Replace with the actual path to your image
+  var imageBounds = [[0, 0], [0, 0]];
+  var markers = []; // Declare an array to store markers
+  const rawStartDate = document.getElementById('bookingDate').value;
+  const startDate = formatDate(rawStartDate);
+  let bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+
+// Create the map if it doesn't exist
+if (!map) {
+        map = L.map('map').setView([0, 0], 3.25);
+    }
+
+    map.on('mousemove', function (e) {
+    const { lat, lng } = e.latlng;
+    document.getElementById('coordinates-display').innerHTML = `${lat.toFixed(4)}, ${lng.toFixed(4)}`
+  });
+
+  for (let deskNum = 1; deskNum <= 150; deskNum++) { //Remove all markers
+            var marker = window['marker' + deskNum];
+            if (map.hasLayer(marker)){map.removeLayer(marker);}     
+    }
+
+switch (selectedOffice) {
+    case 'Hoxton':
+    if (selectedFloor == 1) { //Hoxton 
+        imageUrl = 'Hoxton - Floor 1.jpg'; 
+        imageBounds = [[-50, -50], [50, 50]];
+        for (let deskNum = 1; deskNum <= 19; deskNum++) {
+            marker = window['marker' + deskNum];
+            if (deskNum === 1) { lat = -22.56; long = -16.69; }
+            if (deskNum === 2) { lat = -19; long = -10.5; }
+            if (deskNum === 3) { lat = -23; long = -10.5; }
+            if (deskNum === 4) { lat = -18; long = -6.5; }
+            if (deskNum === 5) { lat = -23; long = -6; }
+            if (deskNum === 6) { lat = -13.7; long = 0; }
+            if (deskNum === 7) { lat = -18; long = 0; }
+            if (deskNum === 8) { lat = -22.5; long = 0; }
+            if (deskNum === 9) { lat = -12.25; long = 4.25; }
+            if (deskNum === 10) { lat = -17.5; long = 4.25; }
+            if (deskNum === 11) { lat = -22; long = 4.25; }
+            if (deskNum === 12) { lat = -12.25; long = 10.25; }
+            if (deskNum === 13) { lat = -17.5; long = 10.25; }
+            if (deskNum === 14) { lat = -22; long = 10.25; }
+            if (deskNum === 15) { lat = -13; long = 14.75; }
+            if (deskNum === 16) { lat = -17.5; long = 14.75; }
+            if (deskNum === 17) { lat = -22; long = 14.75; }
+            if (deskNum === 18) { lat = -17.5; long = 20.75; }
+            if (deskNum === 19) { lat = -22; long = 20.75; }
+            window['marker' + deskNum] = L.marker([lat, long], {icon: greenIcon}).addTo(map).bindPopup('Desk ' + deskNum);
+        }}
+    if (selectedFloor == 2) { //Hoxton 
+        imageUrl = 'Hoxton - Floor 2.jpg'; 
+        imageBounds = [[-50, -50], [50, 50]];
+        for (let deskNum = 1; deskNum <= 22; deskNum++) {
+            marker = window['marker' + deskNum];
+            if (deskNum === 1) { lat = 23.4; long = -24.9; }
+            if (deskNum === 2) { lat = 23.6; long = -17.7; }
+            if (deskNum === 3) { lat = 23.4; long = -10.3; }
+            if (deskNum === 4) { lat = 23.6; long = -2.9; }
+            if (deskNum === 5) { lat = 4.8; long = -25; }
+            if (deskNum === 6) { lat = 4.8; long = -17.6; }
+            if (deskNum === 7) { lat = 4.8; long = -10.2; }
+            if (deskNum === 8) { lat = 4.8; long = -3; }
+            if (deskNum === 9) { lat = -26.22; long = -25.29; }
+            if (deskNum === 10) { lat = -32.89; long = -25.29; }
+            if (deskNum === 11) { lat = -26.67; long = -17.38; }
+            if (deskNum === 12) { lat = -33.25; long = -17.38; }
+            if (deskNum === 13) { lat = 26.86; long = 24.68; }
+            if (deskNum === 14) { lat = 24.61; long = 29.39; }
+            if (deskNum === 15) { lat = 18.86; long = 32.46; }
+            if (deskNum === 16) { lat = 10.97; long = 32.2; }
+            if (deskNum === 17) { lat = 4.7; long = 29.5; }
+            if (deskNum === 18) { lat = 2.42; long = 24.88; }
+            if (deskNum === 19) { lat = 4.7; long = 20.1; }
+            if (deskNum === 20) { lat = 11.27; long = 17.27; }
+            if (deskNum === 21) { lat = 18.94; long = 17.17; }
+            if (deskNum === 22) { lat = 24.62; long = 20.16; }
+            window['marker' + deskNum] = L.marker([lat, long], {icon: greenIcon}).addTo(map).bindPopup('Desk ' + deskNum);
+        }
+    }
+    if (selectedFloor == 3) { //Hoxton 
+        imageUrl = 'Hoxton - Floor 3.jpg'; 
+        imageBounds = [[-50, -50], [1, 50]];
+        for (let deskNum = 1; deskNum <= 24; deskNum++) {
+            marker = window['marker' + deskNum];
+            if (deskNum === 1) { lat = -34.3661; long = -39.4682; }
+            if (deskNum === 2) { lat = -40.0360; long = -39.3599; }
+            if (deskNum === 3) { lat = -34.3706; long = -30.8382; }
+            if (deskNum === 4) { lat = -40.0613; long = -30.7388; }
+            if (deskNum === 5) { lat = -34.3888; long = -24.4202; }
+            if (deskNum === 6) { lat = -39.9855; long = -24.3982; }
+            if (deskNum === 7) { lat = -34.2890; long = -15.8853; }
+            if (deskNum === 8) { lat = -40.0949; long = -15.8414; }
+            if (deskNum === 9) { lat = -34.4432; long = -9.3552; }
+            if (deskNum === 10) { lat = -39.9603; long = -9.4052; }
+            if (deskNum === 11) { lat = -34.4250; long = -0.6961; }
+            if (deskNum === 12) { lat = -40.0360; long = -0.8497; }
+            if (deskNum === 13) { lat = -40.0940; long = 5.5916; }
+            if (deskNum === 14) { lat = -40.1873; long = 14.2223; }
+            if (deskNum === 15) { lat = -17.5864; long = 35.8868; }
+            if (deskNum === 16) { lat = -20.6174; long = 39.5673; }
+            if (deskNum === 17) { lat = -25.4383; long = 39.6002; }
+            if (deskNum === 18) { lat = -29.9026; long = 39.5782; }
+            if (deskNum === 19) { lat = -34.2572; long = 39.5892; }
+            if (deskNum === 20) { lat = -36.9982; long = 35.8319; }
+            if (deskNum === 21) { lat = -34.2209; long = 32.0636; }
+            if (deskNum === 22) { lat = -30.0073; long = 32.1954; }
+            if (deskNum === 23) { lat = -25.3887; long = 32.0636; }
+            if (deskNum === 24) { lat = -20.6893; long = 32.0966; }
+            window['marker' + deskNum] = L.marker([lat, long], {icon: greenIcon}).addTo(map).bindPopup('Desk ' + deskNum);
+        }
+    }
+        break;
+
+case 'Leeds':
+if (selectedFloor == 1) { //Leeds
+imageUrl = 'Leeds - Floor 1.png'; // Replace with the actual path to your Sheffield image
+imageBounds = [[-50, -50], [1, 50]];
+}
+break;
+
+case 'Manchester':
+if (selectedFloor == 1) {
+imageUrl = 'Manchester - Floor 1.png'; // Replace with the actual path to your Sheffield image
+imageBounds = [[-50, -50], [1, 50]];
+for (let deskNum = 1; deskNum <= 50; deskNum++) {
+marker = window['marker' + deskNum];
+if (deskNum === 1) { lat = -15.1092; long = -22.7470; }
+if (deskNum === 2) { lat = -15.0986; long = -21.2858; }
+if (deskNum === 3) { lat = -15.1092; long = -19.9455; }
+if (deskNum === 4) { lat = -15.1517; long = -18.5392; }
+if (deskNum === 5) { lat = -15.7024; long = -22.7799; }
+if (deskNum === 6) { lat = -15.6812; long = -21.3737; }
+if (deskNum === 7) { lat = -15.7024; long = -19.9894; }
+if (deskNum === 8) { lat = -15.7235; long = -18.6161; }
+if (deskNum === 9) { lat = -17.9761; long = -22.7059; }
+if (deskNum === 10) { lat = -17.9552; long = -21.2886; }
+if (deskNum === 11) { lat = -17.9500; long = -19.9428; }
+if (deskNum === 12) { lat = -18.5291; long = -22.7279; }
+if (deskNum === 13) { lat = -18.5603; long = -21.3271; }
+if (deskNum === 14) { lat = -18.5603; long = -19.9703; }
+if (deskNum === 15) { lat = -20.7090; long = -22.7224; }
+if (deskNum === 16) { lat = -20.7193; long = -21.3326; }
+if (deskNum === 17) { lat = -20.6987; long = -19.9483; }
+if (deskNum === 18) { lat = -21.2629; long = -22.7279; }
+if (deskNum === 19) { lat = -21.2476; long = -21.3161; }
+if (deskNum === 20) { lat = -21.2527; long = -19.9044; }
+if (deskNum === 21) { lat = -23.4170; long = -22.7333; }
+if (deskNum === 22) { lat = -23.4019; long = -21.3161; }
+if (deskNum === 23) { lat = -23.3818; long = -19.9044; }
+if (deskNum === 24) { lat = -23.9754; long = -22.8267; }
+if (deskNum === 25) { lat = -23.9603; long = -21.3820; }
+if (deskNum === 26) { lat = -23.9854; long = -19.9373; }
+if (deskNum === 27) { lat = -25.8444; long = -22.3624; }
+if (deskNum === 28) { lat = -25.8979; long = -20.8986; }
+if (deskNum === 29) { lat = -25.8583; long = -19.4814; }
+if (deskNum === 30) { lat = -26.4648; long = -22.3983; }
+if (deskNum === 31) { lat = -26.4844; long = -20.9700; }
+if (deskNum === 32) { lat = -26.4156; long = -19.6022; }
+if (deskNum === 33) { lat = -28.6127; long = -22.4312; }
+if (deskNum === 34) { lat = -28.6030; long = -21.0030; }
+if (deskNum === 35) { lat = -28.6223; long = -19.5913; }
+if (deskNum === 36) { lat = -29.1218; long = -22.3295; }
+if (deskNum === 37) { lat = -29.1801; long = -20.8272; }
+if (deskNum === 38) { lat = -29.1370; long = -19.6187; }
+if (deskNum === 39) { lat = -31.1930; long = -22.3434; }
+if (deskNum === 40) { lat = -31.1695; long = -20.9206; }
+if (deskNum === 41) { lat = -31.1789; long = -19.5309; }
+if (deskNum === 42) { lat = -31.6477; long = -22.3653; }
+if (deskNum === 43) { lat = -31.6571; long = -20.9426; }
+if (deskNum === 44) { lat = -31.6617; long = -19.6187; }
+if (deskNum === 45) { lat = -33.6503; long = -22.3543; }
+if (deskNum === 46) { lat = -33.6960; long = -20.9425; }
+if (deskNum === 47) { lat = -33.7006; long = -19.5802; }
+if (deskNum === 48) { lat = -34.1700; long = -22.3543; }
+if (deskNum === 49) { lat = -34.1519; long = -20.9480; }
+if (deskNum === 50) { lat = -34.1519; long = -19.5528; }
+window['marker' + deskNum] = L.marker([lat, long], {icon: greenIcon}).addTo(map).bindPopup('Desk ' + deskNum);
+}
+}
+break;   
+case 'Perth':
+imageUrl = '.jpg'; // Replace with the actual path to your Sheffield image
+imageBounds = [[-50, -50], [50, 50]];
+break;
+ default:
+  break;
+}
+  let numberBooked = 0;
+
+    if (imageOverlay) {imageOverlay.remove();}
+    imageOverlay = L.imageOverlay(imageUrl, imageBounds).addTo(map);
+
+    for (let deskNum = 1; deskNum <= 150; deskNum++) { //Change Desk To Booked
+        const isDeskBooked = bookingArray.some(booking => 
+            booking.deskNum == deskNum && 
+            booking.floor == selectedFloor && 
+            booking.office == selectedOffice &&  
+            booking.startDate == startDate
+        );
+
+        if (isDeskBooked) {
+      
+             marker = window['marker' + deskNum];
+            if (marker) {
+            var markerLatLng = marker.getLatLng();
+            latitude = markerLatLng.lat;
+            longitude = markerLatLng.lng;
+            if (map.hasLayer(marker)){map.removeLayer(marker);}
+            //  marker.setIcon(L.divIcon({ className: 'booked-marker' }));
+            window['marker' + deskNum] = L.marker([latitude, longitude], {icon: redIcon, interactive: false}).addTo(map);
+            }
+        }
+    }
+
+
+
+
+function onClickCode(){ 
+marker1.on('click', function () { if (!marker1._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 1; } });
+marker2.on('click', function () { if (!marker2._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 2; } });
+marker3.on('click', function () { if (!marker3._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 3; } });
+marker4.on('click', function () { if (!marker4._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 4; } });
+marker5.on('click', function () { if (!marker5._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 5; } });
+marker6.on('click', function () { if (!marker6._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 6; } });
+marker7.on('click', function () { if (!marker7._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 7; } });
+marker8.on('click', function () { if (!marker8._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 8; } });
+marker9.on('click', function () { if (!marker9._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 9; } });
+marker10.on('click', function () { if (!marker10._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 10; } });
+marker11.on('click', function () { if (!marker11._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 11; } });
+marker12.on('click', function () { if (!marker12._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 12; } });
+marker13.on('click', function () { if (!marker13._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 13; } });
+marker14.on('click', function () { if (!marker14._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 14; } });
+marker15.on('click', function () { if (!marker15._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 15; } });
+marker16.on('click', function () { if (!marker16._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 16; } });
+marker17.on('click', function () { if (!marker17._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 17; } });
+marker18.on('click', function () { if (!marker18._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 18; } });
+marker19.on('click', function () { if (!marker19._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 19; } });
+marker20.on('click', function () { if (!marker20._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 20; } });
+marker21.on('click', function () { if (!marker21._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 21; } });
+marker22.on('click', function () { if (!marker22._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 22; } });
+marker23.on('click', function () { if (!marker23._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 23; } });
+marker24.on('click', function () { if (!marker24._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 24; } });
+marker25.on('click', function () { if (!marker25._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 25; } });
+marker26.on('click', function () { if (!marker26._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 26; } });
+marker27.on('click', function () { if (!marker27._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 27; } });
+marker28.on('click', function () { if (!marker28._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 28; } });
+marker29.on('click', function () { if (!marker29._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 29; } });
+marker30.on('click', function () { if (!marker30._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 30; } });
+marker31.on('click', function () { if (!marker31._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 31; } });
+marker32.on('click', function () { if (!marker32._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 32; } });
+marker33.on('click', function () { if (!marker33._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 33; } });
+marker34.on('click', function () { if (!marker34._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 34; } });
+marker35.on('click', function () { if (!marker35._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 35; } });
+marker36.on('click', function () { if (!marker36._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 36; } });
+marker37.on('click', function () { if (!marker37._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 37; } });
+marker38.on('click', function () { if (!marker38._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 38; } });
+marker39.on('click', function () { if (!marker39._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 39; } });
+marker40.on('click', function () { if (!marker40._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 40; } });
+marker41.on('click', function () { if (!marker41._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 41; } });
+marker42.on('click', function () { if (!marker42._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 42; } });
+marker43.on('click', function () { if (!marker43._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 43; } });
+marker44.on('click', function () { if (!marker44._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 44; } });
+marker45.on('click', function () { if (!marker45._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 45; } });
+marker46.on('click', function () { if (!marker46._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 46; } });
+marker47.on('click', function () { if (!marker47._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 47; } });
+marker48.on('click', function () { if (!marker48._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 48; } });
+marker49.on('click', function () { if (!marker49._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 49; } });
+marker50.on('click', function () { if (!marker50._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 50; } });
+marker51.on('click', function () { if (!marker51._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 51; } });
+marker52.on('click', function () { if (!marker52._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 52; } });
+marker53.on('click', function () { if (!marker53._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 53; } });
+marker54.on('click', function () { if (!marker54._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 54; } });
+marker55.on('click', function () { if (!marker55._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 55; } });
+marker56.on('click', function () { if (!marker56._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 56; } });
+marker57.on('click', function () { if (!marker57._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 57; } });
+marker58.on('click', function () { if (!marker58._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 58; } });
+marker59.on('click', function () { if (!marker59._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 59; } });
+marker60.on('click', function () { if (!marker60._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 60; } });
+marker61.on('click', function () { if (!marker61._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 61; } });
+marker62.on('click', function () { if (!marker62._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 62; } });
+marker63.on('click', function () { if (!marker63._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 63; } });
+marker64.on('click', function () { if (!marker64._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 64; } });
+marker65.on('click', function () { if (!marker65._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 65; } });
+marker66.on('click', function () { if (!marker66._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 66; } });
+marker67.on('click', function () { if (!marker67._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 67; } });
+marker68.on('click', function () { if (!marker68._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 68; } });
+marker69.on('click', function () { if (!marker69._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 69; } });
+marker70.on('click', function () { if (!marker70._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 70; } });
+marker71.on('click', function () { if (!marker71._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 71; } });
+marker72.on('click', function () { if (!marker72._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 72; } });
+marker73.on('click', function () { if (!marker73._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 73; } });
+marker74.on('click', function () { if (!marker74._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 74; } });
+marker75.on('click', function () { if (!marker75._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 75; } });
+marker76.on('click', function () { if (!marker76._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 76; } });
+marker77.on('click', function () { if (!marker77._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 77; } });
+marker78.on('click', function () { if (!marker78._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 78; } });
+marker79.on('click', function () { if (!marker79._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 79; } });
+marker80.on('click', function () { if (!marker80._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 80; } });
+marker81.on('click', function () { if (!marker81._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 81; } });
+marker82.on('click', function () { if (!marker82._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 82; } });
+marker83.on('click', function () { if (!marker83._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 83; } });
+marker84.on('click', function () { if (!marker84._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 84; } });
+marker85.on('click', function () { if (!marker85._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 85; } });
+marker86.on('click', function () { if (!marker86._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 86; } });
+marker87.on('click', function () { if (!marker87._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 87; } });
+marker88.on('click', function () { if (!marker88._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 88; } });
+marker89.on('click', function () { if (!marker89._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 89; } });
+marker90.on('click', function () { if (!marker90._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 90; } });
+marker91.on('click', function () { if (!marker91._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 91; } });
+marker92.on('click', function () { if (!marker92._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 92; } });
+marker93.on('click', function () { if (!marker93._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 93; } });
+marker94.on('click', function () { if (!marker94._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 94; } });
+marker95.on('click', function () { if (!marker95._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 95; } });
+marker96.on('click', function () { if (!marker96._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 96; } });
+marker97.on('click', function () { if (!marker97._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 97; } });
+marker98.on('click', function () { if (!marker98._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 98; } });
+marker99.on('click', function () { if (!marker99._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 99; } });
+marker100.on('click', function () { if (!marker100._icon.classList.contains('booked-marker')) { document.getElementById('selectedDesk').value = 100; } });
+
+
+
+}
+onClickCode();
+}
+
+// Call the createMap function when the page loads
+//document.addEventListener('DOMContentLoaded', createMap);
+
+// Update the image overlay when the office changes
+document.getElementById('office').addEventListener('change', function () {createMap(); });
+
+</script>
+
+<script type="module"> 
+// ###############################################################################
+// ################################# JSON SCRIPT #################################
+// ###############################################################################
+
+let data; // Declare data variable
+// Fetch JSON data
+async function fetchData() {
+const response = await fetch('data.json');
+data = await response.json();
+}
+// Call fetchData function to initialize data
+fetchData();
+
+function changeFloorDropDown() {
+const selectedOffice = document.getElementById('office').value;
+const floorSelect = document.getElementById('floor');
+const selectedOfficeData = data.office.find(o => o.name === selectedOffice);
+// Clear previous options
+floorSelect.innerHTML = '';
+if (selectedOfficeData) {
+// Populate the floors drop-down with options based on the selected office
+for (let i = 0; i < selectedOfficeData.desks.length; i++) {
+const option = document.createElement('option');
+option.value = i + 1;
+option.textContent = `${i + 1}`;
+floorSelect.appendChild(option);
+}
+}
+updateDesksAvailable();
+}
+
+function updateDesksAvailable() {
+const selectedOffice = document.getElementById('office').value;
+const selectedFloor = document.getElementById('floor').value -1 ;
+// Find the selected office data in the JSON
+const selectedOfficeData = data.office.find(o => o.name === selectedOffice);
+if (selectedOfficeData) {
+// Find the corresponding floor desks based on the selected floor
+const selectedFloorDesks = selectedOfficeData.desks[selectedFloor];
+// Display the available desks label
+const desksAvailableLabel = document.getElementById('desksAvailable');
+const desksRemaining = document.getElementById('desksRemaining');
+desksAvailableLabel.innerHTML = `Total Desks: ${selectedFloorDesks}`;          
+} else{desksAvailableLabel.innerHTML = ""; desksRemaining.innerHTML = ""}
+}
+
+function deskIconChange(){
+let bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+const deskNum = document.getElementById('selectedDesk').value;
+const office = document.getElementById('office').value;
+
+if (office.trim() === '') {
+  hideGUI();
+} else {
+  showGUI();
+}
+
+const floor = document.getElementById('floor').value;
+const rawStartDate = document.getElementById('bookingDate').value;
+const startDate = formatDate(rawStartDate);
+const selectedOffice = document.getElementById('office').value;
+const selectedFloor = document.getElementById('floor').value -1 ;
+let numberBooked = 0;
+// Find the selected office data in the JSON
+const selectedOfficeData = data.office.find(o => o.name === selectedOffice);
+// Find the corresponding floor desks based on the selected floor
+const selectedFloorDesks = selectedOfficeData.desks[selectedFloor];
+const deskGrid = document.getElementById('deskGrid');
+deskGrid.innerHTML = '';
+for (let i = 1; i <= selectedFloorDesks; i++) {
+  const deskIcon = document.createElement('div');
+  deskIcon.classList.add('desk-icon');
+  deskIcon.innerText = i;
+  // Check if the desk is booked based on the bookingArray
+  const isDeskBooked = bookingArray.some(booking => booking.deskNum == i && booking.floor == selectedFloor + 1 && booking.office == selectedOffice &&  booking.startDate == startDate);
+  // console.log('Booking Array Start Date:', rawStartDate);
+  // console.log(bookingArray.some(booking => booking.startDate));
+  if (isDeskBooked) {
+    deskIcon.classList.add('booked');
+    deskIcon.style.pointerEvents = 'none';
+    numberBooked = numberBooked + 1;
+  } else {
+    deskIcon.addEventListener('click', () => selectDesk(i));
+  }
+  deskGrid.appendChild(deskIcon);
+}
+
+const desksRemaining = document.getElementById('desksRemaining');
+//desksRemaining = selectedFloorDesks -  numberBooked;
+let desksRemainingJS = selectedFloorDesks - numberBooked;
+desksRemaining.innerHTML = 'Desks Available: ' + desksRemainingJS;
+}
+
+document.getElementById('bookingDate').addEventListener('change', createMap);
+document.getElementById('office').onchange = changeFloorDropDown;
+document.getElementById('floor').onchange = updateDesksAvailable;
+document.getElementById('office').addEventListener('change', createMap);
+document.getElementById('floor').addEventListener('change', createMap);
+
+
+
+
+
+</script>
+
+<script>
+function exportToExcel() {
+  const bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+
+  // Convert the bookingArray to a format suitable for Excel (e.g., an array of arrays)
+  const excelData = bookingArray.map(booking => [booking.deskNum, booking.office, booking.floor, booking.startDate]);
+
+  // Create a new workbook
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+  // Add the worksheet to the workbook
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'DeskBookings');
+
+  // Save the workbook to a file
+  XLSX.writeFile(workbook, 'DeskBookings.xlsx');
+}
+
+// ###############################################################################
+// ################################# OTHER SCRIPT ################################
+// ###############################################################################
+//const bookingArray = [];
+let seconds = 0;
+setInterval(() => {
+seconds++;
+const minutes = Math.floor(seconds / 60);
+const remainingSeconds = seconds % 60;
+const formattedTime = `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+timerElement.textContent = formattedTime;
+}, 1000);
+
+const timerElement = document.getElementById('timer');
+// Set the default value of the date input to today's date
+const today = new Date().toISOString().slice(0, 16);
+
+document.addEventListener('DOMContentLoaded', function() {
+
+// var desiredReferer = 'login.html';
+// if (document.referrer.indexOf(desiredReferer) === -1) {
+//     alert('Access denied. Please access from the specified page.');
+//     window.location.href = 'https://www.youtube.com/watch?v=KTTnkuMidv4';
+// }
+
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('bookingDate').value = today;
+// Set the min attribute of the date input to today
+document.getElementById('bookingDate').min = today;
+// Calculate the next month
+const nextMonth = new Date();
+nextMonth.setMonth(nextMonth.getMonth() + 1);
+const nextMonthString = nextMonth.toISOString().split('T')[0];
+// Set the max attribute of the date input to the last day of the next month
+document.getElementById('bookingDate').max = nextMonthString.substring(0, 7) + '-31';
+locationImage.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Aviva_Logo.svg/1280px-Aviva_Logo.svg.png';
+});
+
+// ###############################################################################
+// ########################### GENERATE REPORTS ##################################
+// ###############################################################################
+
+function emailReport(){
+const reportContainer = document.getElementById('reportText');
+const reportTitle = document.getElementById('reportTitle');
+  // Create a mailto URL
+  const subject = encodeURIComponent(reportTitle.textContent);
+  const body = subject + '/n' + encodeURIComponent(reportContainer.textContent);
+  const mailtoURL = `mailto:?subject=${subject}&body=${body}`;
+  // Open the default email client with the mailto URL
+  window.location.href = mailtoURL;
+}
+
+function generateDeskBookingReportToday() {
+    const reportContainer = document.getElementById('reportText');
+    const reportTitle = document.getElementById('reportTitle');
+    let bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+    reportContainer.innerHTML = "";
+    reportTitle.innerHTML = "Desk Booking Report For Today";
+    if (bookingArray.length === 0) {
+        const noBookingMessage = document.createElement('p');
+        noBookingMessage.textContent = 'No desks have been booked.';
+        reportContainer.appendChild(noBookingMessage);
+    } else {
+        // Filter bookings for the current date
+        const currentDate = new Date();
+        const formattedCurrentDate = formatDate(currentDate.toISOString().split('T')[0]);
+        const todayBookings = bookingArray.filter(booking => booking.startDate === formattedCurrentDate);
+        if (todayBookings.length === 0) {
+            const noBookingMessage = document.createElement('p');
+            noBookingMessage.textContent = `No desks have been booked for ${formattedCurrentDate}.`;
+            reportContainer.appendChild(noBookingMessage);
+        } else {
+            // Sort today's bookings by desk number
+            todayBookings.sort((a, b) => a.deskNum - b.deskNum);
+            const bookingList = document.createElement('ul');
+            todayBookings.forEach((booking, index) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `Booking #${index + 1}: Desk ${booking.deskNum} at ${booking.office} office - Floor ${booking.floor} on ${booking.startDate}`;
+                bookingList.appendChild(listItem);
+            });
+            reportContainer.appendChild(bookingList);
+        }
+    }
+    // Append the report container to the body or any other desired element
+}
+
+function generateDeskBookingReportYesterday() {
+    const reportContainer = document.getElementById('reportText');
+    const reportTitle = document.getElementById('reportTitle');
+    let bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+    reportContainer.innerHTML = "";
+    reportTitle.innerHTML = "Desk Booking Report for Yesterday";
+    if (bookingArray.length === 0) {
+        const noBookingMessage = document.createElement('p');
+        noBookingMessage.textContent = 'No desks have been booked.';
+        reportContainer.appendChild(noBookingMessage);
+    } else {
+        // Calculate yesterday's date
+        const currentDate = new Date();
+        const yesterday = new Date(currentDate);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const formattedYesterday = formatDate(yesterday.toISOString().split('T')[0]);
+        // Filter bookings for yesterday
+        const yesterdayBookings = bookingArray.filter(booking => booking.startDate === formattedYesterday);
+        if (yesterdayBookings.length === 0) {
+            const noBookingMessage = document.createElement('p');
+            noBookingMessage.textContent = `No desks have been booked for ${formattedYesterday}.`;
+            reportContainer.appendChild(noBookingMessage);
+        } else {
+            // Sort yesterday's bookings by desk number
+            yesterdayBookings.sort((a, b) => a.deskNum - b.deskNum);
+            const bookingList = document.createElement('ul');
+            yesterdayBookings.forEach((booking, index) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `Booking #${index + 1}: Desk ${booking.deskNum} at ${booking.office} office - Floor ${booking.floor} on ${booking.startDate}`;
+                bookingList.appendChild(listItem);
+            });
+            reportContainer.appendChild(bookingList);
+        }
+    }
+    // Append the report container to the body or any other desired element
+}
+
+function generateDeskBookingReportTomorrow() {
+    const reportContainer = document.getElementById('reportText');
+    const reportTitle = document.getElementById('reportTitle');
+    let bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+    reportContainer.innerHTML = "";
+    reportTitle.innerHTML = "Desk Booking Report for Tomorrow";
+    if (bookingArray.length === 0) {
+        const noBookingMessage = document.createElement('p');
+        noBookingMessage.textContent = 'No desks have been booked.';
+        reportContainer.appendChild(noBookingMessage);
+    } else {
+        // Filter bookings for tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const formattedTomorrow = formatDate(tomorrow.toISOString().split('T')[0]);
+        const tomorrowBookings = bookingArray.filter(booking => booking.startDate === formattedTomorrow);
+
+        if (tomorrowBookings.length === 0) {
+            const noBookingMessage = document.createElement('p');
+            noBookingMessage.textContent = `No desks have been booked for ${formattedTomorrow}.`;
+            reportContainer.appendChild(noBookingMessage);
+        } else {
+            // Sort tomorrow's bookings by desk number
+            tomorrowBookings.sort((a, b) => a.deskNum - b.deskNum);
+
+            const bookingList = document.createElement('ul');
+            tomorrowBookings.forEach((booking, index) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `Booking #${index + 1}: Desk ${booking.deskNum} at ${booking.office} office - Floor ${booking.floor} on ${booking.startDate}`;
+                bookingList.appendChild(listItem);
+            });
+            reportContainer.appendChild(bookingList);
+        }
+    }
+    // Append the report container to the body or any other desired element
+}
+
+function generateDeskBookingReportThisWeek() {
+    const reportContainer = document.getElementById('reportText');
+    const reportTitle = document.getElementById('reportTitle');
+    let bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+
+    reportContainer.innerHTML = "";
+    reportTitle.innerHTML = "Desk Booking Report for This Week";
+
+    if (bookingArray.length === 0) {
+        const noBookingMessage = document.createElement('p');
+        noBookingMessage.textContent = 'No desks have been booked.';
+        reportContainer.appendChild(noBookingMessage);
+    } else {
+        // Filter bookings for this week
+        const currentDate = new Date();
+        const startOfWeek = new Date(currentDate.setDate(currentDate.getDate() - currentDate.getDay()));
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(endOfWeek.getDate() + 6);
+
+        const formattedStartDate = formatDate(startOfWeek.toISOString().split('T')[0]);
+        const formattedEndDate = formatDate(endOfWeek.toISOString().split('T')[0]);
+
+        const weekBookings = bookingArray.filter(
+            booking => booking.startDate >= formattedStartDate && booking.startDate <= formattedEndDate
+        );
+
+        if (weekBookings.length === 0) {
+            const noBookingMessage = document.createElement('p');
+            noBookingMessage.textContent = `No desks have been booked for this week (${formattedStartDate} to ${formattedEndDate}).`;
+            reportContainer.appendChild(noBookingMessage);
+        } else {
+            // Sort week's bookings by desk number
+            weekBookings.sort((a, b) => a.deskNum - b.deskNum);
+
+            const bookingList = document.createElement('ul');
+            weekBookings.forEach((booking, index) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `Booking #${index + 1}: Desk ${booking.deskNum} at ${booking.office} office - Floor ${booking.floor} on ${booking.startDate}`;
+                bookingList.appendChild(listItem);
+            });
+            reportContainer.appendChild(bookingList);
+        }
+    }
+    // Append the report container to the body or any other desired element
+}
+
+function generateDeskBookingReport() {
+    const reportContainer = document.getElementById('reportText');
+    const reportTitle = document.getElementById('reportTitle');
+    let bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+
+    reportContainer.innerHTML = "";
+    reportTitle.innerHTML = "Desk Booking Report";
+
+    if (bookingArray.length === 0) {
+        const noBookingMessage = document.createElement('p');
+        noBookingMessage.textContent = 'No desks have been booked.';
+        reportContainer.appendChild(noBookingMessage);
+    } else {
+        // Sort bookingArray by the startDate in ascending order
+        bookingArray.sort((a, b) => new Date(a.startDate).toLocaleString().localeCompare(new Date(b.startDate).toLocaleString()));
+        const bookingList = document.createElement('ul');
+        bookingArray.forEach((booking, index) => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `Booking #${index + 1}: Desk ${booking.deskNum} at ${booking.office} office - Floor ${booking.floor} on ${booking.startDate}`;
+            bookingList.appendChild(listItem);
+        });
+        reportContainer.appendChild(bookingList);
+    }
+    // Append the report container to the body or any other desired element
+}
+
+function showGUI() {
+    var elements = document.getElementsByClassName("GUIHide");
+
+    // Loop through all elements with the class "GUIHide"
+    for (var i = 0; i < elements.length; i++) {
+      // Replace "GUIHide" with "GUIVisible"
+      elements[i].classList.replace("GUIHide", "GUIVisible");
+    }
+  }
+
+  function hideGUI() {
+    var elements = document.getElementsByClassName("GUIVisible");
+
+    // Loop through all elements with the class "GUIHide"
+    for (var i = 0; i < elements.length; i++) {
+      // Replace "GUIHide" with "GUIVisible"
+      elements[i].classList.replace("GUIVisible", "GUIHide");
+    }
+  }
+
+// ##############################################################################
+// ########################### DESK BOOKINGS  ###################################
+// ############################################################################## 
+function showDesks() {
+const deskGrid = document.getElementById('deskGrid');
+deskGrid.style.display = 'grid'; // Show the desk grid when a location is selected 
+}
+ 
+function selectDesk(deskNumber) {
+const deskSelect = document.getElementById('desk');
+deskSelect.value = deskNumber;
+const deskIcons = document.querySelectorAll('.desk-icon');
+deskIcons.forEach(icon => icon.classList.remove('selected'));
+const selectedDeskIcon = document.querySelector(`.desk-icon:nth-child(${deskNumber})`);
+selectedDeskIcon.classList.add('selected');
+// Update the selected desk field
+document.getElementById('selectedDesk').value = deskNumber;
+}
+
+function bookDesk() {
+if (validateForm()) {
+hideMap();
+const deskSelect = document.getElementById('desk');
+const selectedDeskNumber = deskSelect.value;
+const deskIcon = document.querySelector(`.desk-icon[data-desk-number="${selectedDeskNumber}"]`);
+let bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+
+
+if (deskIcon) {
+deskIcon.classList.add('booked');
+deskIcon.style.pointerEvents = 'none';
+}
+const deskNum = document.getElementById('selectedDesk').value;
+const office = document.getElementById('office').value;
+const floor = document.getElementById('floor').value;
+const rawStartDate = document.getElementById('bookingDate').value;
+const startDate = formatDate(rawStartDate);
+// Display the confirmation message in the popup
+const confirmationMessage = document.getElementById('confirmationMessage');
+confirmationMessage.innerText = `Desk #${deskNum} booked at ${office} office - Floor ${floor} on ${startDate}.`;
+const bookingInfo = {
+  deskNum: deskNum,
+  office: office,
+  floor: floor,
+  startDate: startDate
+};
+bookingArray.push(bookingInfo);
+localStorage.setItem('bookingArray', JSON.stringify(bookingArray));
+
+// Show the popup
+const popup = document.getElementById('confirmationPopup');
+popup.style.display = 'block';
+switch (office) {
+  case "Sheffield":
+  confirmationImage.src = 'https://careers.aviva.co.uk/content/uploads/2019/09/sheffield_746604034-1400x642.jpg';
+    break;
+  case "Eastleigh":
+  confirmationImage.src = 'https://careers.aviva.co.uk/content/uploads/2019/10/BF5TFT-1-1400x968.jpg'
+    break;
+  case "London":
+  confirmationImage.src = 'https://careers.aviva.co.uk/content/uploads/2019/08/4428_Aviva-reception-at-St-Helen_s_-London-1400x933.jpg'
+    break;
+  case "Birmingham":
+  confirmationImage.src = 'https://careers.aviva.co.uk/content/uploads/2022/06/shutterstock_203610229-Large.jpeg'
+    break;
+  case "Bristol":
+  confirmationImage.src = 'https://careers.aviva.co.uk/content/uploads/2019/09/Bristol_389059873-1400x935.jpg'
+    break;
+  case "Hoxton":
+  confirmationImage.src = 'https://static.aviva.io/content/dam/aviva-investors/main/assets/about/company-updates/2021/09/climate-transition-real-assets-fund/hoxton-office-for-climate-transition.jpg'
+    break;
+  case "Leatherhead":
+  confirmationImage.src = 'https://careers.aviva.co.uk/content/uploads/2021/02/Leatherhead-1400x930.jpg'
+    break;
+  case "Leeds":
+  confirmationImage.src = 'https://www.thebusinessdesk.com/assets2/_files/cached/jan_10/500/businessdesk__1263368095_Broadcasting_Place,_leeds.jpg'
+    break;
+  case "Manchester":
+  confirmationImage.src = 'https://careers.aviva.co.uk/content/uploads/2022/06/shutterstock_1072210547-Large.jpeg'
+    break;
+  case "Maxim Park":
+  confirmationImage.src = 'https://www.akpscotland.com/wp-content/uploads/2020/09/IMG_2035-REDUCED-1.jpg'
+    break;
+  case "Norwich":
+  confirmationImage.src = 'https://careers.aviva.co.uk/content/uploads/2019/08/4808_82921_5.jpg'
+    break;
+  case "Perth":
+  confirmationImage.src = 'https://careers.aviva.co.uk/content/uploads/2019/09/perth_1409944574-1400x933.jpg'
+    break;
+  case "Worthing":
+  confirmationImage.src = 'https://careers.aviva.co.uk/content/uploads/2022/06/shutterstock_1167434482-Large.jpeg'
+    break;
+  case "York":
+  confirmationImage.src = 'https://careers.aviva.co.uk/content/uploads/2019/09/york_1150995722-1400x933.jpg'
+    break;
+  default:
+  confirmationImage.src = ''
+    break;
+}
+}
+toggleBurgerBarVisibility();
+}
+
+function cancelDesk() {
+
+  if (validateCancel()) {
+        let bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+        const deskNumInput = prompt('Enter the Desk Number to cancel:');
+    
+    // Check if the user clicked Cancel or entered an empty string
+    if (deskNumInput === null || deskNumInput.trim() === '') {
+        alert('Invalid input. Desk cancellation aborted.');
+        return;
+    }
+      const deskNum = deskNumInput.trim();
+        const office = document.getElementById('office').value;
+        const floor = document.getElementById('floor').value;
+        const rawStartDate = document.getElementById('bookingDate').value;
+        const cancelDate = formatDate(rawStartDate);
+    
+        // Find the index of the booking to cancel in the bookingArray
+        const indexToCancel = bookingArray.findIndex(booking =>
+            booking.deskNum === deskNum &&
+            booking.office === office &&
+            booking.floor === floor &&
+            booking.startDate === cancelDate
+         
+        );
+
+        if (indexToCancel !== -1) {
+            // Remove the booking from the array
+            bookingArray.splice(indexToCancel, 1);
+
+            // Update the local storage
+            localStorage.setItem('bookingArray', JSON.stringify(bookingArray));
+
+            alert(`Desk #${deskNum} on ${cancelDate} canceled successfully.`);
+            clearForm();
+        } else {
+            alert(`No booking found for Desk #${deskNum} on ${cancelDate}.`);
+        }
+
+      }
+}
+
+function formatDate(rawDate) {
+const date = new Date(rawDate);
+const day = date.getDate().toString().padStart(2, '0');
+const month = (date.getMonth() + 1).toString().padStart(2, '0');
+const year = date.getFullYear();
+return `${day}-${month}-${year}`;}
+
+// ##############################################################################
+// ########################### POPUPS  ##########################################
+// ##############################################################################
+
+function toggleMenu() {
+const menu = document.querySelector('.burger-bar .menu');
+menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
+}
+
+function toggleBurgerBarVisibility() {
+const burgerBar = document.querySelector('.burger-bar');
+const confirmationPopup = document.getElementById('confirmationPopup');
+burgerBar.style.display = confirmationPopup.style.display === 'none' ? 'flex' : 'none';
+}
+
+function closeConfirmationPopup() {
+const popup = document.getElementById('confirmationPopup');
+popup.style.display = 'none';
+toggleBurgerBarVisibility();
+clearForm();
+showMap();
+}
+
+function openSettings() {
+const burgerBar = document.querySelector('.burger-bar');
+burgerBar.style.display = 'none';
+const settingsPopup = document.getElementById('settingsPopup');
+settingsPopup.style.display = 'block';
+hideMap();
+}
+
+function closeSettingsPopup() {
+const burgerBar = document.querySelector('.burger-bar');
+burgerBar.style.display = 'flex';
+const settingsPopup = document.getElementById('settingsPopup');
+settingsPopup.style.display = 'none';
+showMap();
+}
+
+function hideMap(){
+  const map = document.getElementById('map');
+map.style.display = 'none';
+}
+
+function showMap(){
+  const map = document.getElementById('map');
+map.style.display = 'block';
+}
+
+function openGenerateReport() {
+const burgerBar = document.querySelector('.burger-bar');
+burgerBar.style.display = 'none';
+const generateReportPopup = document.getElementById('generateReportPopup');
+generateReportPopup.style.display = 'block';
+generateDeskBookingReport();
+hideMap();
+}
+
+
+
+function closeGenerateReport() {
+const burgerBar = document.querySelector('.burger-bar');
+burgerBar.style.display = 'flex';
+const generateReportPopup = document.getElementById('generateReportPopup');
+generateReportPopup.style.display = 'none';
+showMap();
+}
+
+// ##############################################################################
+// ########################### SETTINGS #########################################
+// ##############################################################################
+
+function toggleDarkMode() {
+  const body = document.body;
+  body.classList.toggle('dark-mode');
+
+  // Toggle dark mode for the container element
+  const container = document.querySelector('.container');
+  container.classList.toggle('dark-mode');
+
+  const bookingButton = document.querySelector('.bookingButton');
+  bookingButton.classList.toggle('dark-mode');
+  // Toggle dark mode for popups
+  const popups = document.querySelectorAll('.popup-content');
+  popups.forEach(popup => popup.classList.toggle('dark-mode'));
+}
+
+function increaseFontSize() {
+  const allElements = document.querySelectorAll('*');
+  allElements.forEach(element => {
+    let currentSize = parseInt(window.getComputedStyle(element).fontSize);
+
+    if (currentSize < 35) {
+      currentSize += 1;
+      element.style.fontSize = currentSize + 'px';
+    }
+  });
+}
+
+function decreaseFontSize() {
+  const allElements = document.querySelectorAll('*');
+  allElements.forEach(element => {
+    let currentSize = parseInt(window.getComputedStyle(element).fontSize);
+
+    if (currentSize > 10) {
+      currentSize -= 1;
+      element.style.fontSize = currentSize + 'px';
+    }
+  });
+}
+
+// ##############################################################################
+// ########################### CLEAR FORM #######################################
+// ##############################################################################
+
+function clearForm() {
+document.getElementById('office').value = '';
+let floor = document.getElementById('floor');
+floor.innerHTML = '';
+
+document.getElementById('desk').value = '';
+document.getElementById('selectedDesk').value = '';
+// Clear desks available label
+const desksAvailableLabel = document.getElementById('desksAvailable');
+desksAvailableLabel.innerHTML = '';
+// Clear timer
+const timerElement = document.getElementById('timer');
+timerElement.textContent = '00:00';
+// Remove all desk icons from the deskGrid
+const deskGrid = document.getElementById('deskGrid');
+deskGrid.innerHTML = '';
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('bookingDate').value = today;
+
+createMap();
+
+const desksRemaining = document.getElementById('desksRemaining');
+ desksRemaining.innerHTML = '';
+ hideGUI();
+
+}
+     
+// ##############################################################################
+// ########################### VALIDATION #######################################
+// ##############################################################################
+function validateForm() {
+if (!validateDate()) {
+return false;
+}
+const office = document.getElementById('office').value;
+const floor = document.getElementById('floor').value;
+const selectedDesk = document.getElementById('selectedDesk').value;
+if (office === 'NULL' || floor === '0' || selectedDesk === '') {
+alert('Please select an office, floor, and desk before booking.');
+return false;
+}
+return true;
+}
+
+function validateCancel() {
+const office = document.getElementById('office').value;
+const floor = document.getElementById('floor').value;
+if (office === 'NULL' || floor === '0') {
+alert('Please select an office and floor to cancel a desk.');
+return false;
+}
+return true;
+}
+
+function validateDate() {
+const bookingDate = document.getElementById('bookingDate').value;
+// Convert the selected date to a Date object
+const selectedDate = new Date(`${bookingDate}`);
+// Get the current date and time
+const currentDate = new Date();
+currentDate.setHours(0, 0, 0, 0); // Set time to midnight for comparison
+if (selectedDate < currentDate) {
+alert('Booking date must be in the future. Please select a valid date and time.');
+return false;
+}
+return true;
+}
+
+
+
+
+    </script>
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+
+</body>
+</html>

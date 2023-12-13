@@ -1,0 +1,74 @@
+{
+  "office": [
+    {
+      "name": "Sheffield",
+      "desks": 100,
+      "floors": 2
+    },
+    {
+      "name": "Eastleigh",
+      "desks": 80,
+      "floors": 3
+    },
+    {
+      "name": "London",
+      "desks": 120,
+      "floors": 2
+    },
+    {
+      "name": "Birmingham",
+      "desks": 90,
+      "floors": 3
+    },
+    {
+      "name": "Bristol",
+      "desks": 70,
+      "floors": 2
+    },
+    {
+      "name": "Hoxton",
+      "desks": 80,
+      "floors": 3
+    },
+    {
+      "name": "Leatherhead",
+      "desks": 100,
+      "floors": 2
+    },
+    {
+      "name": "Leeds",
+      "desks": 85,
+      "floors": 3
+    },
+    {
+      "name": "Manchester",
+      "desks": 95,
+      "floors": 2
+    },
+    {
+      "name": "Maxim Park",
+      "desks": 75,
+      "floors": 3
+    },
+    {
+      "name": "Norwich",
+      "desks": 60,
+      "floors": 2
+    },
+    {
+      "name": "Perth",
+      "desks": 110,
+      "floors": 3
+    },
+    {
+      "name": "Worthing",
+      "desks": 80,
+      "floors": 2
+    },
+    {
+      "name": "York",
+      "desks": 90,
+      "floors": 3
+    }
+  ]
+}

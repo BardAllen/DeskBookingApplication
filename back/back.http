@@ -1,0 +1,6 @@
+@back_HostAddress = http://localhost:5236
+
+GET {{back_HostAddress}}/GetOffices/
+Accept: application/json
+
+###

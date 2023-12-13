@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Selectable Floor Plan</title>
+  <style>
+    /* Add your styling for the floor plan here */
+    .floor-plan {
+      position: relative;
+    }
+
+    .floor-area {
+      width: 50px;
+      height: 50px;
+      background-color: #3498db;
+      border: 1px solid #2980b9;
+      margin: 5px;
+      cursor: pointer;
+    }
+
+    .selected {
+      background-color: #27ae60;
+    }
+  </style>
+</head>
+<body>
+
+<div class="floor-plan" onclick="selectArea(event)">
+  <!-- Define your floor plan areas here -->
+  <div class="floor-area" data-area="A1"></div>
+  <div class="floor-area" data-area="A2"></div>
+  <div class="floor-area" data-area="B1"></div>
+  <div class="floor-area" data-area="B2"></div>
+  <!-- Add more areas as needed -->
+</div>
+
+<script>
+  function selectArea(event) {
+    // Check if the clicked element has the class 'floor-area'
+    if (event.target.classList.contains('floor-area')) {
+      // Toggle the 'selected' class for the clicked floor area
+      event.target.classList.toggle('selected');
+      
+      // Get the data attribute (area identifier) of the selected area
+      const selectedArea = event.target.getAttribute('data-area');
+      
+      // You can do something with the selected area identifier, like updating a form field
+      console.log('Selected Area:', selectedArea);
+    }
+  }
+</script>
+
+</body>
+</html>

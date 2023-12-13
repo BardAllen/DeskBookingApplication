@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desk Booking</title>
+  
+  <style>
+    h2 {color: #3498db; text-align: center; margin-bottom: 20px; font-size: 50px;}
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; display: flex; align-items: center;
+      justify-content: center;}
+    .container {background-color: #fdff90; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); border-radius: 8px; overflow: hidden; width: 1000px; max-width: 1500px; padding: 20px;
+      box-sizing: border-box; position: relative;}
+    label {display: block; margin: 10px 0 5px; color: #000000; font-size: 20px;}
+    select, input, button { width: 100%; padding: 10px; margin: 5px 0 15px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+    button {background-color: rgb(27, 161, 9); color: rgb(0, 0, 0); cursor: pointer; font-size: 20px; margin-top: 1px;}
+    .settings-button{background-color: rgb(243, 105, 105); color: rgb(0, 0, 0); cursor: pointer; font-size: 20px; margin-top: 1px;}
+    .settings-button:hover{background-color: rgb(130, 105, 243);}
+    button:hover {background-color: #99f89e;}
+    .desk-grid {display: grid; grid-template-columns: repeat(30, 1fr); grid-gap: 2px; margin-top: 5px; background-size: cover; border-radius: 5px; overflow: hidden;}
+ /* ;} //   background-image: url('https://www.roomsketcher.com/content/uploads/2021/12/RoomSketcher-Office-Floor-Plan-PID3529710-2D-bw-with-Labels.jpg') */
+    .desk-icon { width: 30px; height: 30px; background-color: #3498db; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: rgb(0, 0, 0);
+      font-weight: bold; cursor: pointer; transition: background-color 0.3s;}
+    .desk-icon.selected {background-color: #27ae60;}
+    .desk-icon:hover {background-color: #f1ffb2;}
+    .desk-icon.booked {background-color: red;}
+    .confirmation {margin-top: 20px; font-weight: bold; color: green;}
+    .location-image {height: 100px; width: 150px; position: absolute; top: 0; left: 0; transform: translate(0, 0);}
+    .office-image {width: 500px; height: 500px;}
+    .timer {position: absolute; top: 0; right: 0; padding: 10px; font-size: 16px; color: #555;}
+    .time-inputs {display: flex; gap: 5px;}
+    .popup {display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center;}
+    .popup-content {background-color: #fff; padding: 20px; border-radius: 8px; text-align: center; position: relative;}
+    .close {position: absolute; top: 10px; right: 10px; cursor: pointer; }
+    .row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap; /* Allow items to wrap to the next line */
+}
+
+.input-container {
+  text-align: center;
+  flex: 1; /* Each input container takes equal space */
+}
+
+/* Additional style for responsiveness */
+@media (max-width: 600px) {
+  .input-container {
+    flex: 100%; /* On smaller screens, take up full width */
+  }
+}
+    #office, #floor, #selectedDesk {flex: 1;}
+    body.dark-mode {background-color: #222; color: #fff;}
+    .popup.dark-mode {background: rgba(255, 255, 255, 0.2);}
+    .popup-content.dark-mode {background-color: #333; color: #fff;}
+    .close.dark-mode {color: #fff;}
+
+  /* Add this style to your existing style section or in a separate style tag */
+  .burger-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: #3498db; /* Change the background color as needed */
+  color: #fff;
+  position: absolute; /* Add this line to make it absolute */
+  top: 10px; /* Adjust the top position as needed */
+  right: 10px; /* Adjust the right position as needed */
+  z-index: 2; /* Add this line to ensure it's above other elements */
+}
+  .burger-icon {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bar {
+    width: 40px;
+    height: 5px;
+    background-color: #fff;
+    margin: 4px;
+  }
+
+  .menu {
+    display: none;
+    flex-direction: column;
+    top: 10px; /* Adjust the top position as needed */
+  right: 10px; /* Adjust the right position as needed */
+  }
+
+  .menu a {
+    text-decoration: none;
+    color: #fff;
+    margin: 10px;
+  }
+
+
+
+  </style>
+
+
+</head>
+<body>
+
+
+<div class="container">
+<div class="burger-bar">
+<div class="burger-icon" onclick="toggleMenu()">
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+</div>
+<div class="menu">
+<!-- Add your menu items here -->
+<a href="#">Home</a>
+<a href="#">About</a>
+<a href="#">Contact</a>
+</div>
+</div>
+
+    
+
+  <h2>Desk Booking</h2>
+
+
+
+ 
+    
+
+<div class="timer" id="timer">00:00</div>
+
+
+
+
+<div class="row">
+  <div class="input-container">
+    <label for="office">Office Location:</label>
+    <select style="text-align: center; font-size: 17px; font-weight: bold;" id="office" onchange="showDesks()">
+      <option value="NULL"></option>
+      <option value="Sheffield">Sheffield</option>
+      <option value="Eastleigh">Eastleigh</option>
+      <option value="London">London</option>
+      <option value="Birmingham">Birmingham</option>
+      <option value="Bristol">Bristol</option>
+      <option value="Hoxton">Hoxton</option>
+      <option value="Leatherhead">Leatherhead</option>
+      <option value="Leeds">Leeds</option>
+      <option value="Manchester">Manchester</option>
+      <option value="Maxim Park">Maxim Park</option>
+      <option value="Norwich">Norwich</option>
+      <option value="Perth">Perth</option>
+      <option value="Worthing">Worthing</option>
+      <option value="York">York</option>
+    </select>
+  </div>
+
+  <div class="input-container">
+    <label for="floor">Floor Level:</label>
+    <select style="text-align: center; font-size: 20px; font-weight: bold;" id="floor"></select>
+  </div>
+
+  <div class="input-container">
+    <label for="bookingDate">Booking Date and Time:</label>
+    <div class="time-inputs">
+      <input style="text-align: center; font-size: 20px; font-weight: bold; width: 300px" type="date" id="bookingDate" required>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+<label for="selectedDesk">Selected Desk:</label>
+<input style="text-align: center; background-color: lightgreen; color: black; font-size: 32px; font-weight: bold;" type="text" id="selectedDesk" readonly>
+
+<button style="margin-top: 10px" onclick="bookDesk()">Book Desk</button>
+<button style="margin-top: 10px" onclick="displayArray()">Test Button</button>
+<!-- <button style="margin-top: 10px" class="settings-button" onclick="openSettings()">Settings</button>   -->
+
+
+<label id="desksAvailable"></label>
+<div style="text-align: center;">
+<img src="" alt="Location Image" class="location-image" id="locationImage">
+</div>
+<label for="desk">Desk Number:</label>
+<select id="desk" style="display: none;">
+<!-- <?php for ($i = 1; $i <= 1000; $i++) { ?>
+<option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+<?php } ?> -->
+</select>
+<div class="desk-grid" id="deskGrid"></div>
+<div class="row">
+
+</div>
+</div>
+
+<div id="confirmationPopup" class="popup">
+<div class="popup-content">
+<span class="close" onclick="closePopup()">&times;</span>
+<p style="text-align: center; font-size: 40px; font-weight: bold;"  class="confirmation" id="confirmationMessage"></p>
+<img src="https://images.edrawmax.com/what-is/office-layout/cubicle-office-layout.jpg"  class="office-image" alt="Confirmation Image" id="confirmationImage" style="max-width: 100%; height: auto;">
+<button onclick="closePopup()">OK</button>
+</div>
+</div>
+
+<div id="settingsPopup" class="popup">
+<div class="popup-content">
+<span class="close" onclick="closeSettingsPopup()">&times;</span>
+<h3>Settings</h3>
+<button onclick="closeSettingsPopup()">Increase Font Size</button>
+<div class="row">
+<button onclick="toggleDarkMode()">Dark Mode</button>
+<button onclick="closeSettingsPopup()">Languages</button>
+</div>
+<button onclick="closeSettingsPopup()">Close</button>
+</div>
+</div>
+
+
+<script type="module"> 
+
+
+
+
+let data; // Declare data variable
+// Fetch JSON data
+async function fetchData() {
+const response = await fetch('data.json');
+data = await response.json();
+}
+// Call fetchData function to initialize data
+fetchData();
+
+function changeFloorDropDown() {
+const selectedOffice = document.getElementById('office').value;
+const floorSelect = document.getElementById('floor');
+const selectedOfficeData = data.office.find(o => o.name === selectedOffice);
+// Clear previous options
+floorSelect.innerHTML = '';
+if (selectedOfficeData) {
+// Populate the floors drop-down with options based on the selected office
+for (let i = 0; i < selectedOfficeData.desks.length; i++) {
+const option = document.createElement('option');
+option.value = i + 1;
+option.textContent = `${i + 1}`;
+floorSelect.appendChild(option);
+}
+}
+updateDesksAvailable();
+}
+
+    // Function to update desks available based on the selected office and floor
+function updateDesksAvailable() {
+const selectedOffice = document.getElementById('office').value;
+const selectedFloor = document.getElementById('floor').value -1 ;
+// Find the selected office data in the JSON
+const selectedOfficeData = data.office.find(o => o.name === selectedOffice);
+if (selectedOfficeData) {
+// Find the corresponding floor desks based on the selected floor
+const selectedFloorDesks = selectedOfficeData.desks[selectedFloor];
+// Display the available desks label
+const desksAvailableLabel = document.getElementById('desksAvailable');
+desksAvailableLabel.innerHTML = `Total Desks: ${selectedFloorDesks}`;          
+} else{desksAvailableLabel.innerHTML = "";}
+}
+
+
+
+function deskIconChange(){
+
+const deskNum = document.getElementById('selectedDesk').value;
+const office = document.getElementById('office').value;
+const floor = document.getElementById('floor').value;
+const rawStartDate = document.getElementById('bookingDate').value;
+
+const selectedOffice = document.getElementById('office').value;
+const selectedFloor = document.getElementById('floor').value -1 ;
+// Find the selected office data in the JSON
+const selectedOfficeData = data.office.find(o => o.name === selectedOffice);
+// Find the corresponding floor desks based on the selected floor
+const selectedFloorDesks = selectedOfficeData.desks[selectedFloor];
+
+const deskGrid = document.getElementById('deskGrid');
+deskGrid.innerHTML = '';
+for (let i = 1; i <= selectedFloorDesks; i++) {
+  const deskIcon = document.createElement('div');
+  deskIcon.classList.add('desk-icon');
+  deskIcon.innerText = i;
+
+  // Check if the desk is booked based on the bookingArray
+  const isDeskBooked = bookingArray.some(booking => booking.deskNum == i && booking.floor == selectedFloor + 1 && booking.office == selectedOffice);
+  
+  if (isDeskBooked) {
+    deskIcon.classList.add('booked');
+    deskIcon.style.pointerEvents = 'none';
+  } else {
+    deskIcon.addEventListener('click', () => selectDesk(i));
+  }
+
+  deskGrid.appendChild(deskIcon);
+}}
+
+
+function getDesksAvailable(){ return parseInt(getElementById("desksAvailableLabel").innerHTML.split(' ')[2]);}
+// Event listener for office change
+document.getElementById('office').onchange = changeFloorDropDown;
+// Event listener for floor change
+document.getElementById('floor').onchange = updateDesksAvailable;
+document.getElementById('office').addEventListener('change', deskIconChange);
+document.getElementById('floor').addEventListener('change', deskIconChange);
+</script>
+
+<script>
+
+function toggleDarkMode() {
+const body = document.body;
+body.classList.toggle('dark-mode');
+// Toggle dark mode for popups
+const popups = document.querySelectorAll('.popup');
+popups.forEach(popup => popup.classList.toggle('dark-mode'));
+}
+
+
+const locationImage = document.getElementById('locationImage');
+const timerElement = document.getElementById('timer');
+locationImage.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Aviva_Logo.svg/1280px-Aviva_Logo.svg.png';
+// Set the default value of the date input to today's date
+const today = new Date().toISOString().slice(0, 16);
+
+function openSettings() {
+// Display the settings popup
+const settingsPopup = document.getElementById('settingsPopup');
+settingsPopup.style.display = 'block';
+}
+
+function closeSettingsPopup() {
+// Hide the settings popup
+const settingsPopup = document.getElementById('settingsPopup');
+settingsPopup.style.display = 'none';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('bookingDate').value = today;
+// Set the min attribute of the date input to today
+document.getElementById('bookingDate').min = today;
+// Calculate the next month
+const nextMonth = new Date();
+nextMonth.setMonth(nextMonth.getMonth() + 1);
+const nextMonthString = nextMonth.toISOString().split('T')[0];
+// Set the max attribute of the date input to the last day of the next month
+document.getElementById('bookingDate').max = nextMonthString.substring(0, 7) + '-31';
+});
+
+let seconds = 0;
+setInterval(() => {
+seconds++;
+const minutes = Math.floor(seconds / 60);
+const remainingSeconds = seconds % 60;
+const formattedTime = `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+timerElement.textContent = formattedTime;
+}, 1000);
+    
+function showDesks() {
+const deskGrid = document.getElementById('deskGrid');
+deskGrid.style.display = 'grid'; // Show the desk grid when a location is selected 
+}
+ 
+function selectDesk(deskNumber) {
+const deskSelect = document.getElementById('desk');
+deskSelect.value = deskNumber;
+const deskIcons = document.querySelectorAll('.desk-icon');
+deskIcons.forEach(icon => icon.classList.remove('selected'));
+const selectedDeskIcon = document.querySelector(`.desk-icon:nth-child(${deskNumber})`);
+selectedDeskIcon.classList.add('selected');
+// Update the selected desk field
+document.getElementById('selectedDesk').value = deskNumber;
+}
+
+function toggleMenu() {
+const menu = document.querySelector('.burger-bar .menu');
+menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
+}
+
+function toggleBurgerBarVisibility() {
+const burgerBar = document.querySelector('.burger-bar');
+const confirmationPopup = document.getElementById('confirmationPopup');
+burgerBar.style.display = confirmationPopup.style.display === 'none' ? 'flex' : 'none';
+}
+
+
+const bookingArray = [];
+
+function bookDesk() {
+if (validateForm()) {
+const deskSelect = document.getElementById('desk');
+const selectedDeskNumber = deskSelect.value;
+const deskIcon = document.querySelector(`.desk-icon[data-desk-number="${selectedDeskNumber}"]`);
+if (deskIcon) {
+deskIcon.classList.add('booked');
+deskIcon.style.pointerEvents = 'none';
+}
+
+const deskNum = document.getElementById('selectedDesk').value;
+const office = document.getElementById('office').value;
+const floor = document.getElementById('floor').value;
+const rawStartDate = document.getElementById('bookingDate').value;
+const startDate = formatDate(rawStartDate);
+
+// Display the confirmation message in the popup
+const confirmationMessage = document.getElementById('confirmationMessage');
+confirmationMessage.innerText = `Desk #${deskNum} booked at ${office} office - Floor ${floor} on ${startDate}.`;
+
+const bookingInfo = {
+  deskNum: deskNum,
+  office: office,
+  floor: floor,
+  startDate: startDate
+};
+
+
+bookingArray.push(bookingInfo);
+
+
+// Show the popup
+const popup = document.getElementById('confirmationPopup');
+popup.style.display = 'block';
+
+
+      
+if (office == "Sheffield"){confirmationImage.src = 'https://www.thestar.co.uk/webimg/b25lY21zOjEzYjQ4OTJhLWFmYjYtNGExMC05OGE4LWJlNDcyMjkxMDgwOTpiOTUwNDQ3My02YWM4LTRkMzEtOWNjMC1hYzkyYTE4MjhkNjE=.jpg';}
+if (office == "Eastleigh"){confirmationImage.src = 'https://careers.aviva.co.uk/content/uploads/2019/09/sheffield_746604034-900x413.jpg';}
+if (office == "London"){confirmationImage.src = 'https://upload.wikimedia.org/wikipedia/commons/1/1c/Aviva%2C_London.jpg';}
+}
+toggleBurgerBarVisibility();
+}
+
+  
+function formatDate(rawDate) {
+const date = new Date(rawDate);
+const day = date.getDate().toString().padStart(2, '0');
+const month = (date.getMonth() + 1).toString().padStart(2, '0');
+const year = date.getFullYear();
+return `${day}-${month}-${year}`;}
+
+
+function closePopup() {
+const popup = document.getElementById('confirmationPopup');
+popup.style.display = 'none';
+toggleBurgerBarVisibility();
+clearForm();
+}
+
+
+function clearForm() {
+document.getElementById('office').value = '';
+document.getElementById('floor').value = '';
+document.getElementById('desk').value = '';
+document.getElementById('selectedDesk').value = '';
+// Clear desks available label
+const desksAvailableLabel = document.getElementById('desksAvailable');
+desksAvailableLabel.innerHTML = '';
+// Clear timer
+const timerElement = document.getElementById('timer');
+timerElement.textContent = '00:00';
+// Remove all desk icons from the deskGrid
+const deskGrid = document.getElementById('deskGrid');
+deskGrid.innerHTML = '';
+}
+     
+
+// ##############################################################################
+// ########################### VALIDATION #######################################
+// ##############################################################################
+
+function validateForm() {
+if (!validateDate()) {
+return false;
+}
+const office = document.getElementById('office').value;
+const floor = document.getElementById('floor').value;
+const selectedDesk = document.getElementById('selectedDesk').value;
+if (office === 'NULL' || floor === '0' || selectedDesk === '') {
+alert('Please select an office, floor, and desk before booking.');
+return false;
+}
+return true;
+}
+
+
+
+function validateDate() {
+const bookingDate = document.getElementById('bookingDate').value;
+// Convert the selected date to a Date object
+const selectedDate = new Date(`${bookingDate}`);
+// Get the current date and time
+const currentDate = new Date();
+currentDate.setHours(0, 0, 0, 0); // Set time to midnight for comparison
+if (selectedDate < currentDate) {
+alert('Booking date and time must be in the future. Please select a valid date and time.');
+return false;
+}
+const office = document.getElementById('office').value;
+const floor = document.getElementById('floor').value;
+const selectedDesk = document.getElementById('selectedDesk').value;
+if (office === 'NULL' || floor === '0' || selectedDesk === '') {
+alert('Please select an office, floor, and desk before booking.');
+return false;
+}
+return true;
+}
+
+
+  </script>
+</body>
+</html>
+
+

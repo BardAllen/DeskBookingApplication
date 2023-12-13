@@ -1,0 +1,52 @@
+{
+    "office": [
+       
+        {
+            "name": "Eastleigh",
+            "desks": [329],
+            "floors": 1
+        },
+    
+        {
+            "name": "Birmingham",
+            "desks": [24],
+            "floors": 1
+        },
+     
+        {
+            "name": "Hoxton",
+            "desks": [20,22,24],
+            "floors": 3
+        },
+        {
+            "name": "Leatherhead",
+            "desks": [168],
+            "floors": 1
+        },
+        {
+            "name": "Leeds",
+            "desks": [52],
+            "floors": 1
+        },
+        {
+            "name": "Manchester",
+            "desks": [186],
+            "floors": 1
+        },
+        
+    
+        {
+            "name": "Worthing",
+            "desks": [60],
+            "floors": 1
+        }
+      
+    ]
+
+
+
+   
+  }
+  
+
+  

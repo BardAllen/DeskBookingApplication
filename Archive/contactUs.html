@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desk Booking</title>
+
+  <link rel="stylesheet" type="text/css" href="styles.css">
+
+</head>
+<body>
+
+<div class="timer" id="timer">00:00</div>
+
+<div class="container">
+<div class="burger-bar">
+<div class="burger-icon" onclick="toggleMenu()">
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+</div>
+<div class="menu">
+<!-- Add your menu items here -->
+<a href="Desk Booking.html">Home</a>
+<a href="#">Settings</a>
+</div>
+</div>
+
+    
+
+<h2>Desk Booking</h2>
+
+
+
+
+
+<div class="row">
+  <div class="input-container">
+    <label class="contact-us-text" style="text-align: center; font-size:50px;" for="office">Contact Us</label>
+    <p class="contact-us-text">Telephone number: <span class="telephone">0800 123 4567</span></p>
+    <p class="contact-us-text">Address: <br> <span class="address">1 Aviva Road <br> Avivaville <br> AV1 V4</span>
+    <p class="contact-us-text">Email: <a class="email" href="mailto:aviva@aviva.email?subject=Aviva Query">aviva@aviva.email</a></p>
+  </div>
+</div>
+</div>
+
+<script>
+  function toggleMenu() {
+const menu = document.querySelector('.burger-bar .menu');
+menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
+}
+
+
+
+</script>
+
+

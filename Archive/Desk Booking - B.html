@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desk Booking</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+      width: 400px;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    h2 {
+      color: #333;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      color: #555;
+    }
+
+    select,
+    input,
+    button {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0 15px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .desk-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr); /* Adjust the number of columns */
+      grid-gap: 10px;
+      margin-top: 10px;
+    }
+
+    .desk-icon {
+      width: 30px;
+      height: 30px;
+      background-color: #3498db;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .desk-icon.selected {
+      background-color: #27ae60;
+    }
+
+    .desk-icon:hover {
+      background-color: #2980b9;
+    }
+
+    .confirmation {
+      margin-top: 20px;
+      font-weight: bold;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Desk Booking</h2>
+
+    <label for="office">Office Location:</label>
+    <select id="office" onchange="showDesks()">
+      <option value="Sheffield">Sheffield</option>
+      <option value="Eastleigh">Eastleigh</option>
+      <option value="London">London</option>
+    </select>
+
+    <label for="floor">Floor Level:</label>
+    <select id="floor">
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+    </select>
+
+    <label for="desk">Desk Number:</label>
+    <select id="desk" style="display: none;">
+      <?php for ($i = 1; $i <= 100; $i++) { ?>
+        <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+      <?php } ?>
+    </select>
+
+    <div class="desk-grid" id="deskGrid"></div>
+
+    <label for="datetime">Date/Time:</label>
+    <input type="datetime-local" id="datetime" required>
+
+    <button onclick="bookDesk()">Book Desk</button>
+
+    <p class="confirmation" id="confirmationMessage"></p>
+
+    <div>
+      <label for="selectedDesk">Selected Desk:</label>
+      <input type="text" id="selectedDesk" readonly>
+    </div>
+  </div>
+
+  <script>
+    // Set the default value of the date input to today's date
+    const today = new Date().toISOString().slice(0, 16);
+    document.getElementById('datetime').value = today;
+
+    function showDesks() {
+      const deskGrid = document.getElementById('deskGrid');
+      deskGrid.style.display = 'grid'; // Show the desk grid when a location is selected
+    }
+
+    const deskGrid = document.getElementById('deskGrid');
+    for (let i = 1; i <= 100; i++) {
+      const deskIcon = document.createElement('div');
+      deskIcon.classList.add('desk-icon');
+      deskIcon.innerText = i;
+      deskIcon.addEventListener('click', () => selectDesk(i));
+      deskGrid.appendChild(deskIcon);
+    }
+
+    function selectDesk(deskNumber) {
+      const deskSelect = document.getElementById('desk');
+      deskSelect.value = deskNumber;
+
+      const deskIcons = document.querySelectorAll('.desk-icon');
+      deskIcons.forEach(icon => icon.classList.remove('selected'));
+      const selectedDeskIcon = document.querySelector(`.desk-icon:nth-child(${deskNumber})`);
+      selectedDeskIcon.classList.add('selected');
+
+      // Update the selected desk field
+      document.getElementById('selectedDesk').value = deskNumber;
+    }
+
+    function bookDesk() {
+      const office = document.getElementById('office').value;
+      const floor = document.getElementById('floor').value;
+      const desk = document.getElementById('desk').value;
+      const datetime = document.getElementById('datetime').value;
+
+      // Display the confirmation message
+      const confirmationMessage = document.getElementById('confirmationMessage');
+      confirmationMessage.innerText = `Desk booked at ${office}, Floor ${floor}, Desk ${desk} on ${datetime}`;
+
+      // Optional: You can clear the form or perform other actions as needed
+      clearForm();
+    }
+
+    function clearForm() {
+      // Reset the form fields
+      document.getElementById('office').value = 'Sheffield';
+      document.getElementById('floor').value = '1';
+      document.getElementById('desk').value = '1';
+
+      // Set the default value of the date input to today's date
+      const today = new Date().toISOString().slice(0, 16);
+      document.getElementById('datetime').value = today;
+
+      // Remove the selected class from desk icons
+      const deskIcons = document.querySelectorAll('.desk-icon');
+      deskIcons.forEach(icon => icon.classList.remove('selected'));
+
+      // Clear the selected desk field
+      document.getElementById('selectedDesk').value = '';
+    }
+  </script>
+
+</body>
+</html>

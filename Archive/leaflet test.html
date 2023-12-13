@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <title>Zoomable Image with Fixed Button</title>
+    <style>
+        #map {
+            height: 500px;
+        }
+        #fixedButton {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #3498db;
+            color: #fff;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+        .booked-marker {
+            background-color: red !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <button id="fixedButton">Book Desk</button>
+    
+    <script>
+        var map = L.map('map').setView([0, 0], 3.25);
+
+        var imageUrl = 'Untitled.jpg'; // Replace with the actual path to your image
+        var imageBounds = [[-50, -50], [50, 50]];
+
+        L.imageOverlay(imageUrl, imageBounds).addTo(map);
+
+        var markers = [];
+
+        function addMarker(lat, lng, popupContent) {
+            var marker = L.marker([lat, lng]).addTo(map).bindPopup(popupContent);
+            markers.push(marker);
+            return marker;
+        }
+
+        var marker1 = L.marker([-23, -17]).addTo(map).bindPopup('Desk 1');
+        var marker2 = L.marker([-19, -10.5]).addTo(map).bindPopup('Desk 2');
+        var marker3 = L.marker([-23, -10.5]).addTo(map).bindPopup('Desk 3');
+        var marker4 = L.marker([-18, -6.5]).addTo(map).bindPopup('Desk 4');
+        var marker5 = L.marker([-23, -6]).addTo(map).bindPopup('Desk 5');
+        var marker6 = L.marker([-13.7, 0]).addTo(map).bindPopup('Desk 6');
+        var marker7 = L.marker([-18, 0]).addTo(map).bindPopup('Desk 7');
+        var marker8 = L.marker([-22.5, 0]).addTo(map).bindPopup('Desk 8');
+        
+        var marker9 = L.marker([-12.25, 4.25]).addTo(map).bindPopup('Desk 9');
+        var marker10 = L.marker([-17.5, 4.25]).addTo(map).bindPopup('Desk 10');
+        var marker11 = L.marker([-22, 4.25]).addTo(map).bindPopup('Desk 11');
+        
+        var marker12 = L.marker([-12.25, 10.25]).addTo(map).bindPopup('Desk 12');
+        var marker13 = L.marker([-17.5, 10.25]).addTo(map).bindPopup('Desk 13');
+        var marker14 = L.marker([-22, 10.25]).addTo(map).bindPopup('Desk 14');
+        
+        var marker15 = L.marker([-13, 14.75]).addTo(map).bindPopup('Desk 15');
+        var marker16 = L.marker([-17.5, 14.75]).addTo(map).bindPopup('Desk 16');
+        var marker17 = L.marker([-22, 14.75]).addTo(map).bindPopup('Desk 17');
+
+
+        var marker17 = L.marker([-13, 20.75]).addTo(map).bindPopup('Desk 15');
+        var marker18 = L.marker([-17.5, 20.75]).addTo(map).bindPopup('Desk 16');
+        var marker19 = L.marker([-22, 20.75]).addTo(map).bindPopup('Desk 17');
+
+        var bookingButton = document.getElementById('fixedButton');
+
+        bookingButton.addEventListener('click', function () {
+            // Perform booking logic here
+            // For example, let's assume marker1 is booked
+            bookMarker(marker1);
+        });
+
+        function bookMarker(marker) {
+            marker.setIcon(L.divIcon({ className: 'booked-marker' }));
+            marker.unbindPopup(); // Remove the popup if you want
+            marker.disable(); // Disable click events on the marker
+        }
+    
+        bookMarker(marker1);
+        
+        // Add click event listeners for markers
+       
+            marker1.on('click', function () {
+                alert('You clicked ' + this.getPopup().getContent());
+            });
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desk Booking</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: #fdff90;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+      width: 60%; /* Adjusted width */
+      max-width: 800px; /* Added max-width */
+      padding: 20px;
+      box-sizing: border-box;
+      position: relative;
+      
+    }
+
+    h2 {
+      color: #3498db;
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 50px;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      color: #555;
+      font-size: 20px;
+
+    }
+
+    select,
+    input,
+    button {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0 15px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      background-color: rgb(149, 255, 135);
+      color: rgb(0, 0, 0);
+      cursor: pointer;
+      font-size: 20px;
+      
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .desk-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      grid-gap: 5px;
+      margin-top: 5px;
+      background-image: url('https://www.roomsketcher.com/content/uploads/2021/12/RoomSketcher-Office-Floor-Plan-PID3529710-2D-bw-with-Labels.jpg'); /* Add your image URL here */
+      background-size: cover;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .desk-icon {
+      width: 30px;
+      height: 30px;
+      background-color: #3498db;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .desk-icon.selected {
+      background-color: #27ae60;
+    }
+
+    .desk-icon:hover {
+      background-color: #2980b9;
+    }
+    .desk-icon.booked {
+  background-color: red;
+}
+
+    .confirmation {
+      margin-top: 20px;
+      font-weight: bold;
+      color: green;
+    }
+
+    .location-image {
+   
+      height: 100px;
+      width: 150px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform: translate(0, 0);
+    }
+
+    .office-image {
+      width: 500px;
+      height: 500px;
+      
+
+    }
+
+    /* Add styles for the timer */
+    .timer {
+      position: absolute;
+      top: 0;
+      right: 0;
+      padding: 10px;
+      font-size: 16px;
+      color: #555;
+    }
+
+    /* Adjusted style for time inputs */
+    .time-inputs {
+      display: flex;
+      gap: 5px; /* Adjusted gap */
+    }
+
+    /* Popup styles */
+    .popup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .popup-content {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      position: relative;
+    }
+
+    .close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+    }
+
+    /* Adjusted styles for the row containing Office Location, Floor Level, and Selected Desk */
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+
+    #office,
+    #floor,
+    #selectedDesk {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Desk Booking</h2>
+
+    <!-- Timer element -->
+    <div class="timer" id="timer">00:00</div>
+
+    <!-- Updated layout for Office Location, Floor Level, and Selected Desk -->
+    <div class="row">
+      <label for="office">Office Location:</label>
+      <select  style="text-align: center; font-size: 20px; font-weight: bold;"  id="office" onchange="showDesks()">
+        <option value="NULL"></option>
+        <option value="Sheffield">Sheffield</option>
+        <option value="Eastleigh">Eastleigh</option>
+        <option value="London">London</option>
+      </select>
+
+      <label for="floor">Floor Level:</label>
+      <select  style="text-align: center; font-size: 20px; font-weight: bold; " id="floor">
+        <option value="0"></option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+      </select>
+
+      <label for="selectedDesk">Selected Desk:</label>
+      <input style="text-align: center; background-color: lightgreen; color: black; font-size: 32px; font-weight: bold;" type="text" id="selectedDesk" readonly>
+    </div>
+
+
+    
+    <label for="bookingDateTime">Booking Date and Time:</label>
+    <div class="time-inputs">
+      <input style="text-align: center; font-size: 20px; font-weight: bold;"  type="date" id="bookingDate" required>
+      <select style="text-align: center; font-size: 20px; font-weight: bold;"  id="bookingTime" required>
+        <option value="09:15">09:00</option>
+        <option value="09:15">09:15</option>
+        <option value="09:30">09:30</option>
+        <option value="09:45">09:45</option>
+        <option value="10:00">10:00</option>
+        <option value="10:15">10:15</option>
+        <option value="10:30">10:30</option>
+        <option value="10:45">10:45</option>
+        <option value="11:00">11:00</option>
+        <option value="11:15">11:15</option>
+        <option value="11:30">11:30</option>
+        <option value="11:45">11:45</option>
+        <option value="12:00">12:00</option>
+        <option value="12:15">12:15</option>
+        <option value="12:30">12:30</option>
+        <option value="12:45">12:45</option>
+        <option value="13:00">13:00</option>
+        <option value="13:15">13:15</option>
+        <option value="13:30">13:30</option>
+        <option value="13:45">13:45</option>
+        <option value="14:00">14:00</option>
+        <option value="14:15">14:15</option>
+        <option value="14:30">14:30</option>
+        <option value="14:45">14:45</option>
+        <option value="15:00">15:00</option>
+        <option value="15:15">15:15</option>
+        <option value="15:30">15:30</option>
+        <option value="15:45">15:45</option>
+        <option value="16:00">16:00</option>
+        <option value="16:15">16:15</option>
+        <option value="16:30">16:30</option>
+        <option value="16:45">16:45</option>
+        <option value="17:00">17:00</option>
+        <option value="17:15">17:15</option>
+        <option value="17:30">17:30</option>
+        <option value="17:45">17:45</option>
+        <option value="18:00">18:00</option>
+        <option value="18:15">18:15</option>
+        <option value="18:30">18:30</option>
+        <option value="18:45">18:45</option>
+        <option value="19:00">19:00</option>
+        <option value="19:15">19:15</option>
+        <option value="19:30">19:30</option>
+        <option value="19:45">19:45</option>
+        <option value="20:00">20:00</option>
+        <option value="20:15">20:15</option>
+        <option value="20:30">20:30</option>
+        <option value="20:45">20:45</option>
+        <option value="21:00">21:00</option>
+      </select>
+    </div>
+    
+
+
+   
+
+
+    <label for="endTime">End Time:</label>
+    <div class="time-inputs">
+      <select style="text-align: center; font-size: 20px; font-weight: bold;"  id="endTime" required>
+                <option value="09:15">09:00</option>
+        <option value="09:15">09:15</option>
+        <option value="09:30">09:30</option>
+        <option value="09:45">09:45</option>
+        <option value="10:00">10:00</option>
+        <option value="10:15">10:15</option>
+        <option value="10:30">10:30</option>
+        <option value="10:45">10:45</option>
+        <option value="11:00">11:00</option>
+        <option value="11:15">11:15</option>
+        <option value="11:30">11:30</option>
+        <option value="12:00">12:00</option>
+        <option value="12:15">12:15</option>
+        <option value="12:30">12:30</option>
+        <option value="12:45">12:45</option>
+        <option value="13:00">13:00</option>
+        <option value="13:15">13:15</option>
+        <option value="13:30">13:30</option>
+        <option value="13:45">13:45</option>
+        <option value="14:00">14:00</option>
+        <option value="14:15">14:15</option>
+        <option value="14:30">14:30</option>
+        <option value="14:45">14:45</option>
+        <option value="15:00">15:00</option>
+        <option value="15:15">15:15</option>
+        <option value="15:30">15:30</option>
+        <option value="15:45">15:45</option>
+        <option value="16:00">16:00</option>
+        <option value="16:15">16:15</option>
+        <option value="16:30">16:30</option>
+        <option value="16:45">16:45</option>
+        <option value="17:00">17:00</option>
+        <option value="17:15">17:15</option>
+        <option value="17:30">17:30</option>
+        <option value="17:45">17:45</option>
+        <option value="18:00">18:00</option>
+        <option value="18:15">18:15</option>
+        <option value="18:30">18:30</option>
+        <option value="18:45">18:45</option>
+        <option value="19:00">19:00</option>
+        <option value="19:15">19:15</option>
+        <option value="19:30">19:30</option>
+        <option value="19:45">19:45</option>
+        <option value="20:00">20:00</option>
+        <option value="20:15">20:15</option>
+        <option value="20:30">20:30</option>
+        <option value="20:45">20:45</option>
+        <option value="21:00">21:00</option>
+      </select>
+    </div>
+    
+
+    <div style="text-align: center;">
+      <img src="" alt="Location Image" class="location-image" id="locationImage">
+    </div>
+
+    <label for="desk">Desk Number:</label>
+    <select id="desk" style="display: none;">
+      <?php for ($i = 1; $i <= 100; $i++) { ?>
+        <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+      <?php } ?>
+    </select>
+
+    <div class="desk-grid" id="deskGrid"></div>
+
+
+    <button onclick="bookDesk()">Book Desk</button>
+  </div>
+
+  <!-- Popup -->
+  <div id="confirmationPopup" class="popup">
+    <div class="popup-content">
+      <span class="close" onclick="closePopup()">&times;</span>
+      <p class="confirmation" id="confirmationMessage"></p>
+
+  
+
+      <img src="https://images.edrawmax.com/what-is/office-layout/cubicle-office-layout.jpg"  class="office-image" alt="Confirmation Image" id="confirmationImage" style="max-width: 100%; height: auto;">
+      <button onclick="closePopup()">OK</button>
+    </div>
+  </div>
+
+
+
+  <script>
+
+
+
+
+
+
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+            // Get today's date in the format "YYYY-MM-DD"
+            const today = new Date().toISOString().split('T')[0];
+            // Set the default value of the date input to today's date
+            document.getElementById('bookingDate').value = today;
+            document.getElementById('endTime').value = "17:00";
+        });
+
+    const locationImage = document.getElementById('locationImage');
+    const timerElement = document.getElementById('timer');
+    locationImage.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Aviva_Logo.svg/1280px-Aviva_Logo.svg.png';
+    // Set the default value of the date input to today's date
+    const today = new Date().toISOString().slice(0, 16);
+  
+
+    // Start the timer
+    let seconds = 0;
+    setInterval(() => {
+      seconds++;
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      const formattedTime = `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+      timerElement.textContent = formattedTime;
+    }, 1000);
+    
+
+    function showDesks() {
+  
+      const deskGrid = document.getElementById('deskGrid');
+      deskGrid.style.display = 'grid'; // Show the desk grid when a location is selected
+
+      // Update location image based on the selected office
+      const selectedOffice = document.getElementById('office').value;
+    }
+
+    const deskGrid = document.getElementById('deskGrid');
+    for (let i = 1; i <= 100; i++) {
+      const deskIcon = document.createElement('div');
+      deskIcon.classList.add('desk-icon');
+      deskIcon.innerText = i;
+      deskIcon.addEventListener('click', () => selectDesk(i));
+      deskGrid.appendChild(deskIcon);
+    }
+
+    function selectDesk(deskNumber) {
+      const deskSelect = document.getElementById('desk');
+      deskSelect.value = deskNumber;
+
+      const deskIcons = document.querySelectorAll('.desk-icon');
+      deskIcons.forEach(icon => icon.classList.remove('selected'));
+      const selectedDeskIcon = document.querySelector(`.desk-icon:nth-child(${deskNumber})`);
+      selectedDeskIcon.classList.add('selected');
+
+      // Update the selected desk field
+      document.getElementById('selectedDesk').value = deskNumber;
+    }
+
+ 
+
+    function bookDesk() {
+        if (validateForm()) {
+      const deskSelect = document.getElementById('desk');
+      const selectedDeskNumber = deskSelect.value;
+
+      const deskIcon = document.querySelector(`.desk-icon[data-desk-number="${selectedDeskNumber}"]`);
+
+      if (deskIcon) {
+        // Mark the desk as booked
+        deskIcon.classList.add('booked');
+      }
+      const deskNum = document.getElementById('selectedDesk').value;
+      const office = document.getElementById('office').value;
+      const floor = document.getElementById('floor').value;
+      const rawStartDate = document.getElementById('bookingDate').value;
+      const startDate = formatDate(rawStartDate);
+      const startTime = document.getElementById('bookingTime').value;
+      const endTime = document.getElementById('endTime').value;
+      // Display the confirmation message in the popup
+      const confirmationMessage = document.getElementById('confirmationMessage');
+      confirmationMessage.innerText = `Desk #${deskNum} booked at ${office} office - Floor ${floor} on ${startDate} at ${startTime} to ${endTime}.`;
+      // Show the popup
+      const popup = document.getElementById('confirmationPopup');
+      popup.style.display = 'block';
+      
+      if (office == "Sheffield"){confirmationImage.src = 'https://www.thestar.co.uk/webimg/b25lY21zOjEzYjQ4OTJhLWFmYjYtNGExMC05OGE4LWJlNDcyMjkxMDgwOTpiOTUwNDQ3My02YWM4LTRkMzEtOWNjMC1hYzkyYTE4MjhkNjE=.jpg';}
+      if (office == "Eastleigh"){confirmationImage.src = 'https://careers.aviva.co.uk/content/uploads/2019/09/sheffield_746604034-900x413.jpg';}
+      if (office == "London"){confirmationImage.src = 'https://upload.wikimedia.org/wikipedia/commons/1/1c/Aviva%2C_London.jpg';}
+
+    }
+
+    }
+
+ 
+    function formatDate(rawDate) {
+  const date = new Date(rawDate);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+
+  return `${day}-${month}-${year}`;
+}
+    function closePopup() {
+      // Hide the popup
+      const popup = document.getElementById('confirmationPopup');
+      popup.style.display = 'none';
+
+      clearForm();
+    }
+
+    function validateForm() {
+  const office = document.getElementById('office').value;
+  const floor = document.getElementById('floor').value;
+  const selectedDesk = document.getElementById('selectedDesk').value;
+  
+  // Check if any of the required fields are empty
+  if (office === 'NULL' || floor === '0' || selectedDesk === '') {
+    alert('Please select an office, floor, and desk before booking.');
+    return false; // Prevent form submission
+  }
+
+
+
+  // If all validations pass, allow the form submission
+  return true;
+}
+
+
+
+    function clearForm() {
+      // Reset the form fields
+      document.getElementById('office').value = '';
+      document.getElementById('floor').value = '';
+      document.getElementById('desk').value = '';
+      document.getElementById('selectedDesk').value = '';
+      // Set the default value of the date input to today's date
+
+    
+
+      // Remove the selected class from desk icons
+      const deskIcons = document.querySelectorAll('.desk-icon');
+      deskIcons.forEach(icon => {
+       icon.classList.remove('selected');
+      //  icon.classList.remove('booked'); // Clear booked status
+     });
+
+      // Clear the selected desk field
+   
+
+      // Clear the location image
+ 
+    }
+  </script>
+</body>
+</html>
+
+

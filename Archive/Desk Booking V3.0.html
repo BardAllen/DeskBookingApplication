@@ -1,0 +1,2807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <title>Desk Booking</title>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+  <link rel="icon" href="faviconICO.ico" type="image/png">
+  <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script type="text/javascript">
+  function googleTranslateElementInit() {new google.translate.TranslateElement({ pageLanguage: 'en', autoDisplay: false }, 'google_translate_element');}
+</script>
+
+
+
+</head>
+<body>
+
+<div class="timer" id="timer">00:00</div>
+
+
+<div class="container">
+
+<div class="burger-bar">
+<div class="burger-icon" onclick="toggleMenu()">
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+</div>
+<div class="menu">
+<!-- Add your menu items here -->
+<a href="#Settings" onclick="openSettings()">Settings</a>
+<a href="#Generate-Report" onclick="openGenerateReport()">Generate Report</a>
+<a href="#Cancel-Booking" onclick="cancelDesk()" >Cancel Booking</a>
+</div>
+</div>
+
+<h2>Desk Booking</h2>
+
+<!-- <div class="user-info">
+  <label style="text-align: center; font-size:15px;" id="usernameLabel">A160634</label>
+</div>
+ -->
+
+
+
+ <div class="image-container">
+  <div class="hover-content">
+    <p id="username" value = "" class="username">USERNAME</p>
+    <a href="login.html" class="logout-link">Logout</a>
+  </div>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Aviva_Logo.svg/1280px-Aviva_Logo.svg.png" alt="Aviva Logo" class="location-image" id="locationImage">
+</div>
+ 
+<div class="row">
+  <div class="input-container">
+    <label for="office">Office Location</label>
+    <select style="text-align: center; font-size: 17px; font-weight: bold;" id="office" onchange="showDesks()">
+      <option value="NULL"></option>
+      <option value="Hoxton">Hoxton</option>
+      <option value="Leeds">Leeds</option>
+      <option value="Manchester">Manchester</option>
+      <option value="Birmingham">Birmingham</option>
+      <option value="Eastleigh">Eastleigh</option>
+      <option value="Worthing">Worthing</option>
+      <option value="Leatherhead">Leatherhead</option>
+    </select>
+  </div>
+
+  <div class="input-container">
+    <label for="floor">Floor Level</label>
+    <select style="text-align: center; font-size: 20px; font-weight: bold;" id="floor"></select>
+  </div>
+
+  <div class="input-container">
+    <label for="bookingDate">Booking Date</label>
+    <div class="time-inputs">
+      <input style="text-align: center; font-size: 20px; font-weight: bold; width: 400px" type="date" id="bookingDate" required>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+<!-- // <button style="margin-top: 10px" onclick="displayArray()">Test Button</button> -->
+<!-- <button style="margin-top: 10px" class="settings-button" onclick="openSettings()">Settings</button>   -->
+
+
+
+
+<div class="row">
+<label id="desksAvailable"></label>
+<label id="desksBooked"></label>
+<label id="desksRemaining"></label>
+</div>
+
+<div class="row">
+<label id="selectedDeskLabel">Selected Desk</label>
+<input  type="text" id="selectedDesk" readonly>
+</div>
+
+<div class="button-container">
+<button class="bookingButton" onclick="bookDesk()" role="button">Book Desk</button>
+<button class="bookingButton" style="background-color: rgb(68, 1, 194);"onclick="openRandomDeskGen()" role="button">I'm Feeling Lucky</button>
+</div>
+
+
+
+<div style="font-size:30px;" id="coordinates-display"></div>
+<div id="map"></div>
+
+<select id="desk" style="display: none;">
+</select>
+<div class="desk-grid" id="deskGrid"></div>
+<div class="row">
+</div>
+</div>
+</div>
+
+<!-- // ##############################################################################
+//      ############### I'M FEELING LUCKY POPUP  #####################################
+//      ############################################################################## -->
+<div id="randomDeskPopup" class="popup">
+  <div class="popup-content">
+  <canvas id="canvas" width="600" height="600"></canvas>
+  <audio id="spinSound" src="spinSoundMP3.mp3"></audio>
+  <div class="font-size-buttons">
+    <button style = "background-color: rgb(255, 127, 206)" class="button-89" onclick="closeRandomDeskGen()">Go Back</button>
+    <button style = "background-color: aquamarine" class="button-89" onclick="spinAgain()">Let It Ride</button>
+  <button style = "background-color: rgb(246, 255, 127)"  class="button-89" onclick="bookDesk()">Book Desk</button>
+  </div>
+</div>
+</div>
+
+<!-- // ##############################################################################
+//      ######################## CONFIRMATION POPUP  #####################################
+//      ############################################################################## -->
+<div id="confirmationPopup" class="popup">
+<div class="popup-content">
+<span class="close"  onclick="closeConfirmationPopup()">&times;</span>
+<p style="text-align: center; font-size: 40px; font-weight: bold;"  class="confirmation" id="confirmationMessage"></p>
+<img src=""  class="office-image" alt="Confirmation Image" id="confirmationImage" style="max-width: 100%; height: auto;">
+<button class="button-89" onclick="closeConfirmationPopup()">OK</button>
+</div>
+</div>
+
+<!-- // ##############################################################################
+//      ######################## SETTINGS  ###########################################
+//      ############################################################################## -->
+<div id="settingsPopup" class="popup">
+<div class="popup-content">
+<span class="close"  onclick="closeSettingsPopup()">&times;</span>
+<h2>Settings</h2>
+<div class="font-size-buttons">
+  <button class="button-89" style="background-color: rgb(248, 144, 144)" onclick="decreaseFontSize()">Decrease Font Size</button>
+  <button class="button-89" style="background-color: rgb(201, 255, 157)" onclick="increaseFontSize()">Increase Font Size</button>
+</div>
+<button class="button-89" style="background-color: rgb(94, 94, 94); color: white;" onclick="toggleDarkMode()">Dark Mode</button>
+<label for="languageSelect">Select Language:</label>
+<div style="font-size:40px" id="google_translate_element"></div>
+<button  class="button-89" style="background-color: rgb(0, 92, 23)"  onclick="closeSettingsPopup()">Close</button>
+</div>
+</div>
+<!-- // ##############################################################################
+//      ######################## GENERATE REPORT #####################################
+//      ############################################################################## -->
+<div id="generateReportPopup" class="popup">
+  <div class="popup-content">
+    <span class="close" onclick="closeGenerateReport()">&times;</span>
+    <h2>Generate Report</h2>
+    <div class="font-size-buttons">
+    <button class="button-89" style="background-color: rgb(168, 255, 97)" onclick="generateDeskBookingReportYesterday()">Yesterday's Bookings</button>
+    <button class="button-89" style="background-color: rgb(202, 233, 176)" onclick="generateDeskBookingReportToday()">Today's Bookings</button>
+    <button class="button-89" style="background-color: rgb(245, 147, 147)" onclick="generateDeskBookingReportTomorrow()">Tomorrow's Bookings</button>
+    <button class="button-89" style="background-color: rgb(126, 242, 250)" onclick="generateDeskBookingReportThisWeek()">This Week's Bookings</button>
+    <button class="button-89" style="background-color: rgb(245, 159, 212)" onclick="generateDeskBookingReportToday()">This Month's Bookings</button>
+    <button class="button-89" style="background-color: rgb(194, 107, 235)" onclick="generateDeskBookingReportToday()">This Year's Bookings</button>
+  </div>
+
+    <label style="font-size: 40px" id="reportTitle"></label>
+    <div style="height: 400px; overflow-y: auto;" id="scrollableBox">
+      <label id="reportText"></label>
+    </div>
+  </div>
+  <div class="font-size-buttons">
+  <button class="button-89" style="background-color: rgb(240, 98, 93)" onclick="closeGenerateReport()">Close Reports</button>
+  <button class="button-89" style="background-color: rgb(165, 156, 255)" onclick="emailReport()">Email Report</button>
+  <button class="button-89" style="background-color: rgb(138, 247, 49)" onclick="exportToExcel()">Export to Excel</button>
+</div>
+</div>
+
+
+<script>
+
+    // Retrieve the username from localStorage
+    const loggedInUsername = localStorage.getItem('loggedInUsername');
+
+// Check if the username is present
+if (loggedInUsername) {
+  // Update the username element with the logged-in username
+  document.getElementById('username').innerText = loggedInUsername;
+}
+// Clear the stored username from localStorage (optional)
+//localStorage.removeItem('loggedInUsername');
+
+var map; // Declare map variable outside the function
+var imageOverlay; // Declare imageOverlay variable outside the function
+let totalDesks = 0;
+let deskRemainingInteger = 0; 
+var options = [];
+
+var startAngle = 0;
+var arc = Math.PI / (options.length / 2);
+var spinTimeout = null;
+var spinArcStart = 10;
+var spinTime = 0;
+var spinTimeTotal = 0;
+var ctx;
+
+
+
+document.addEventListener('keydown', function (event) {
+  // Check if the hotkey is pressed (Ctrl+C in this case)
+  if (event.ctrlKey && event.key === 'c') {
+    // Get the coordinates from the 'coordinates-display' element
+    const coordinates = document.getElementById('coordinates-display').innerHTML;
+    // Create a temporary textarea element to hold the coordinates text
+    const textarea = document.createElement('textarea');
+    textarea.value = coordinates;
+    document.body.appendChild(textarea);
+    // Select the text in the textarea
+    textarea.select();
+    textarea.setSelectionRange(0, 99999); // For mobile devices
+    // Execute the copy command
+    document.execCommand('copy');
+    // Remove the temporary textarea
+    document.body.removeChild(textarea);
+    // Optionally, you can provide some visual feedback to the user
+  }
+});
+
+
+var greenIcon = L.icon({
+    iconUrl: 'deskIconAvailable.png',
+    iconSize:     [25, 25], // size of the icon
+
+});
+var redIcon = L.icon({
+  iconUrl: 'deskNotAvailable.jpg',
+    iconSize:     [25, 25], // size of the icon
+
+});
+function addMarker(lat, lng, popupContent) {
+    var marker = L.marker([lat, lng]).bindPopup(popupContent);
+    markers.push(marker);
+    return marker;
+}
+
+{ //marker decs
+var marker1 = L.marker([0, 0]);
+var marker2 = L.marker([0, 0]);
+var marker3 = L.marker([0, 0]);
+var marker4 = L.marker([0, 0]);
+var marker5 = L.marker([0, 0]);
+var marker6 = L.marker([0, 0]);
+var marker7 = L.marker([0, 0]);
+var marker8 = L.marker([0, 0]);
+var marker9 = L.marker([0, 0]);
+var marker10 = L.marker([0, 0]);
+var marker11 = L.marker([0, 0]);
+var marker12 = L.marker([0, 0]);
+var marker13 = L.marker([0, 0]);
+var marker14 = L.marker([0, 0]);
+var marker15 = L.marker([0, 0]);
+var marker16 = L.marker([0, 0]);
+var marker17 = L.marker([0, 0]);
+var marker18 = L.marker([0, 0]);
+var marker19 = L.marker([0, 0]);
+var marker20 = L.marker([0, 0]);
+var marker21 = L.marker([0, 0]);
+var marker22 = L.marker([0, 0]);
+var marker23 = L.marker([0, 0]);
+var marker24 = L.marker([0, 0]);
+var marker25 = L.marker([0, 0]);
+var marker26 = L.marker([0, 0]);
+var marker27 = L.marker([0, 0]);
+var marker28 = L.marker([0, 0]);
+var marker29 = L.marker([0, 0]);
+var marker30 = L.marker([0, 0]);
+var marker31 = L.marker([0, 0]);
+var marker32 = L.marker([0, 0]);
+var marker33 = L.marker([0, 0]);
+var marker34 = L.marker([0, 0]);
+var marker35 = L.marker([0, 0]);
+var marker36 = L.marker([0, 0]);
+var marker37 = L.marker([0, 0]);
+var marker38 = L.marker([0, 0]);
+var marker39 = L.marker([0, 0]);
+var marker40 = L.marker([0, 0]);
+var marker41 = L.marker([0, 0]);
+var marker42 = L.marker([0, 0]);
+var marker43 = L.marker([0, 0]);
+var marker44 = L.marker([0, 0]);
+var marker45 = L.marker([0, 0]);
+var marker46 = L.marker([0, 0]);
+var marker47 = L.marker([0, 0]);
+var marker48 = L.marker([0, 0]);
+var marker49 = L.marker([0, 0]);
+var marker50 = L.marker([0, 0]);
+var marker51 = L.marker([0, 0]);
+var marker52 = L.marker([0, 0]);
+var marker53 = L.marker([0, 0]);
+var marker54 = L.marker([0, 0]);
+var marker55 = L.marker([0, 0]);
+var marker56 = L.marker([0, 0]);
+var marker57 = L.marker([0, 0]);
+var marker58 = L.marker([0, 0]);
+var marker59 = L.marker([0, 0]);
+var marker60 = L.marker([0, 0]);
+var marker61 = L.marker([0, 0]);
+var marker62 = L.marker([0, 0]);
+var marker63 = L.marker([0, 0]);
+var marker64 = L.marker([0, 0]);
+var marker65 = L.marker([0, 0]);
+var marker66 = L.marker([0, 0]);
+var marker67 = L.marker([0, 0]);
+var marker68 = L.marker([0, 0]);
+var marker69 = L.marker([0, 0]);
+var marker70 = L.marker([0, 0]);
+var marker71 = L.marker([0, 0]);
+var marker72 = L.marker([0, 0]);
+var marker73 = L.marker([0, 0]);
+var marker74 = L.marker([0, 0]);
+var marker75 = L.marker([0, 0]);
+var marker76 = L.marker([0, 0]);
+var marker77 = L.marker([0, 0]);
+var marker78 = L.marker([0, 0]);
+var marker79 = L.marker([0, 0]);
+var marker80 = L.marker([0, 0]);
+var marker81 = L.marker([0, 0]);
+var marker82 = L.marker([0, 0]);
+var marker83 = L.marker([0, 0]);
+var marker84 = L.marker([0, 0]);
+var marker85 = L.marker([0, 0]);
+var marker86 = L.marker([0, 0]);
+var marker87 = L.marker([0, 0]);
+var marker88 = L.marker([0, 0]);
+var marker89 = L.marker([0, 0]);
+var marker90 = L.marker([0, 0]);
+var marker91 = L.marker([0, 0]);
+var marker92 = L.marker([0, 0]);
+var marker93 = L.marker([0, 0]);
+var marker94 = L.marker([0, 0]);
+var marker95 = L.marker([0, 0]);
+var marker96 = L.marker([0, 0]);
+var marker97 = L.marker([0, 0]);
+var marker98 = L.marker([0, 0]);
+var marker99 = L.marker([0, 0]);
+var marker100 = L.marker([0, 0]);
+var marker101 = L.marker([0, 0]);
+var marker102 = L.marker([0, 0]);
+var marker103 = L.marker([0, 0]);
+var marker104 = L.marker([0, 0]);
+var marker105 = L.marker([0, 0]);
+var marker106 = L.marker([0, 0]);
+var marker107 = L.marker([0, 0]);
+var marker108 = L.marker([0, 0]);
+var marker109 = L.marker([0, 0]);
+var marker110 = L.marker([0, 0]);
+var marker111 = L.marker([0, 0]);
+var marker112 = L.marker([0, 0]);
+var marker113 = L.marker([0, 0]);
+var marker114 = L.marker([0, 0]);
+var marker115 = L.marker([0, 0]);
+var marker116 = L.marker([0, 0]);
+var marker117 = L.marker([0, 0]);
+var marker118 = L.marker([0, 0]);
+var marker119 = L.marker([0, 0]);
+var marker120 = L.marker([0, 0]);
+var marker121 = L.marker([0, 0]);
+var marker122 = L.marker([0, 0]);
+var marker123 = L.marker([0, 0]);
+var marker124 = L.marker([0, 0]);
+var marker125 = L.marker([0, 0]);
+var marker126 = L.marker([0, 0]);
+var marker127 = L.marker([0, 0]);
+var marker128 = L.marker([0, 0]);
+var marker129 = L.marker([0, 0]);
+var marker130 = L.marker([0, 0]);
+var marker131 = L.marker([0, 0]);
+var marker132 = L.marker([0, 0]);
+var marker133 = L.marker([0, 0]);
+var marker134 = L.marker([0, 0]);
+var marker135 = L.marker([0, 0]);
+var marker136 = L.marker([0, 0]);
+var marker137 = L.marker([0, 0]);
+var marker138 = L.marker([0, 0]);
+var marker139 = L.marker([0, 0]);
+var marker140 = L.marker([0, 0]);
+var marker141 = L.marker([0, 0]);
+var marker142 = L.marker([0, 0]);
+var marker143 = L.marker([0, 0]);
+var marker144 = L.marker([0, 0]);
+var marker145 = L.marker([0, 0]);
+var marker146 = L.marker([0, 0]);
+var marker147 = L.marker([0, 0]);
+var marker148 = L.marker([0, 0]);
+var marker149 = L.marker([0, 0]);
+var marker150 = L.marker([0, 0]);
+var marker151 = L.marker([0, 0]);
+var marker152 = L.marker([0, 0]);
+var marker153 = L.marker([0, 0]);
+var marker154 = L.marker([0, 0]);
+var marker155 = L.marker([0, 0]);
+var marker156 = L.marker([0, 0]);
+var marker157 = L.marker([0, 0]);
+var marker158 = L.marker([0, 0]);
+var marker159 = L.marker([0, 0]);
+var marker160 = L.marker([0, 0]);
+var marker161 = L.marker([0, 0]);
+var marker162 = L.marker([0, 0]);
+var marker163 = L.marker([0, 0]);
+var marker164 = L.marker([0, 0]);
+var marker165 = L.marker([0, 0]);
+var marker166 = L.marker([0, 0]);
+var marker167 = L.marker([0, 0]);
+var marker168 = L.marker([0, 0]);
+var marker169 = L.marker([0, 0]);
+var marker170 = L.marker([0, 0]);
+var marker171 = L.marker([0, 0]);
+var marker172 = L.marker([0, 0]);
+var marker173 = L.marker([0, 0]);
+var marker174 = L.marker([0, 0]);
+var marker175 = L.marker([0, 0]);
+var marker176 = L.marker([0, 0]);
+var marker177 = L.marker([0, 0]);
+var marker178 = L.marker([0, 0]);
+var marker179 = L.marker([0, 0]);
+var marker180 = L.marker([0, 0]);
+var marker181 = L.marker([0, 0]);
+var marker182 = L.marker([0, 0]);
+var marker183 = L.marker([0, 0]);
+var marker184 = L.marker([0, 0]);
+var marker185 = L.marker([0, 0]);
+var marker186 = L.marker([0, 0]);
+var marker187 = L.marker([0, 0]);
+var marker188 = L.marker([0, 0]);
+var marker189 = L.marker([0, 0]);
+var marker190 = L.marker([0, 0]);
+var marker191 = L.marker([0, 0]);
+var marker192 = L.marker([0, 0]);
+var marker193 = L.marker([0, 0]);
+var marker194 = L.marker([0, 0]);
+var marker195 = L.marker([0, 0]);
+var marker196 = L.marker([0, 0]);
+var marker197 = L.marker([0, 0]);
+var marker198 = L.marker([0, 0]);
+var marker199 = L.marker([0, 0]);
+var marker200 = L.marker([0, 0]);
+var marker201 = L.marker([0, 0]);
+var marker202 = L.marker([0, 0]);
+var marker203 = L.marker([0, 0]);
+var marker204 = L.marker([0, 0]);
+var marker205 = L.marker([0, 0]);
+var marker206 = L.marker([0, 0]);
+var marker207 = L.marker([0, 0]);
+var marker208 = L.marker([0, 0]);
+var marker209 = L.marker([0, 0]);
+var marker210 = L.marker([0, 0]);
+var marker211 = L.marker([0, 0]);
+var marker212 = L.marker([0, 0]);
+var marker213 = L.marker([0, 0]);
+var marker214 = L.marker([0, 0]);
+var marker215 = L.marker([0, 0]);
+var marker216 = L.marker([0, 0]);
+var marker217 = L.marker([0, 0]);
+var marker218 = L.marker([0, 0]);
+var marker219 = L.marker([0, 0]);
+var marker220 = L.marker([0, 0]);
+var marker221 = L.marker([0, 0]);
+var marker222 = L.marker([0, 0]);
+var marker223 = L.marker([0, 0]);
+var marker224 = L.marker([0, 0]);
+var marker225 = L.marker([0, 0]);
+var marker226 = L.marker([0, 0]);
+var marker227 = L.marker([0, 0]);
+var marker228 = L.marker([0, 0]);
+var marker229 = L.marker([0, 0]);
+var marker230 = L.marker([0, 0]);
+var marker231 = L.marker([0, 0]);
+var marker232 = L.marker([0, 0]);
+var marker233 = L.marker([0, 0]);
+var marker234 = L.marker([0, 0]);
+var marker235 = L.marker([0, 0]);
+var marker236 = L.marker([0, 0]);
+var marker237 = L.marker([0, 0]);
+var marker238 = L.marker([0, 0]);
+var marker239 = L.marker([0, 0]);
+var marker240 = L.marker([0, 0]);
+var marker241 = L.marker([0, 0]);
+var marker242 = L.marker([0, 0]);
+var marker243 = L.marker([0, 0]);
+var marker244 = L.marker([0, 0]);
+var marker245 = L.marker([0, 0]);
+var marker246 = L.marker([0, 0]);
+var marker247 = L.marker([0, 0]);
+var marker248 = L.marker([0, 0]);
+var marker249 = L.marker([0, 0]);
+var marker250 = L.marker([0, 0]);
+var marker251 = L.marker([0, 0]);
+var marker252 = L.marker([0, 0]);
+var marker253 = L.marker([0, 0]);
+var marker254 = L.marker([0, 0]);
+var marker255 = L.marker([0, 0]);
+var marker256 = L.marker([0, 0]);
+var marker257 = L.marker([0, 0]);
+var marker258 = L.marker([0, 0]);
+var marker259 = L.marker([0, 0]);
+var marker260 = L.marker([0, 0]);
+var marker261 = L.marker([0, 0]);
+var marker262 = L.marker([0, 0]);
+var marker263 = L.marker([0, 0]);
+var marker264 = L.marker([0, 0]);
+var marker265 = L.marker([0, 0]);
+var marker266 = L.marker([0, 0]);
+var marker267 = L.marker([0, 0]);
+var marker268 = L.marker([0, 0]);
+var marker269 = L.marker([0, 0]);
+var marker270 = L.marker([0, 0]);
+var marker271 = L.marker([0, 0]);
+var marker272 = L.marker([0, 0]);
+var marker273 = L.marker([0, 0]);
+var marker274 = L.marker([0, 0]);
+var marker275 = L.marker([0, 0]);
+var marker276 = L.marker([0, 0]);
+var marker277 = L.marker([0, 0]);
+var marker278 = L.marker([0, 0]);
+var marker279 = L.marker([0, 0]);
+var marker280 = L.marker([0, 0]);
+var marker281 = L.marker([0, 0]);
+var marker282 = L.marker([0, 0]);
+var marker283 = L.marker([0, 0]);
+var marker284 = L.marker([0, 0]);
+var marker285 = L.marker([0, 0]);
+var marker286 = L.marker([0, 0]);
+var marker287 = L.marker([0, 0]);
+var marker288 = L.marker([0, 0]);
+var marker289 = L.marker([0, 0]);
+var marker290 = L.marker([0, 0]);
+var marker291 = L.marker([0, 0]);
+var marker292 = L.marker([0, 0]);
+var marker293 = L.marker([0, 0]);
+var marker294 = L.marker([0, 0]);
+var marker295 = L.marker([0, 0]);
+var marker296 = L.marker([0, 0]);
+var marker297 = L.marker([0, 0]);
+var marker298 = L.marker([0, 0]);
+var marker299 = L.marker([0, 0]);
+var marker300 = L.marker([0, 0]);
+var marker301 = L.marker([0, 0]);
+var marker302 = L.marker([0, 0]);
+var marker303 = L.marker([0, 0]);
+var marker304 = L.marker([0, 0]);
+var marker305 = L.marker([0, 0]);
+var marker306 = L.marker([0, 0]);
+var marker307 = L.marker([0, 0]);
+var marker308 = L.marker([0, 0]);
+var marker309 = L.marker([0, 0]);
+var marker310 = L.marker([0, 0]);
+var marker311 = L.marker([0, 0]);
+var marker312 = L.marker([0, 0]);
+var marker313 = L.marker([0, 0]);
+var marker314 = L.marker([0, 0]);
+var marker315 = L.marker([0, 0]);
+var marker316 = L.marker([0, 0]);
+var marker317 = L.marker([0, 0]);
+var marker318 = L.marker([0, 0]);
+var marker319 = L.marker([0, 0]);
+var marker320 = L.marker([0, 0]);
+var marker321 = L.marker([0, 0]);
+var marker322 = L.marker([0, 0]);
+var marker323 = L.marker([0, 0]);
+var marker324 = L.marker([0, 0]);
+var marker325 = L.marker([0, 0]);
+var marker326 = L.marker([0, 0]);
+var marker327 = L.marker([0, 0]);
+var marker328 = L.marker([0, 0]);
+var marker329 = L.marker([0, 0]);
+var marker330 = L.marker([0, 0]);
+var marker331 = L.marker([0, 0]);
+var marker332 = L.marker([0, 0]);
+var marker333 = L.marker([0, 0]);
+var marker334 = L.marker([0, 0]);
+var marker335 = L.marker([0, 0]);
+var marker336 = L.marker([0, 0]);
+var marker337 = L.marker([0, 0]);
+var marker338 = L.marker([0, 0]);
+var marker339 = L.marker([0, 0]);
+var marker340 = L.marker([0, 0]);
+var marker341 = L.marker([0, 0]);
+var marker342 = L.marker([0, 0]);
+var marker343 = L.marker([0, 0]);
+var marker344 = L.marker([0, 0]);
+var marker345 = L.marker([0, 0]);
+var marker346 = L.marker([0, 0]);
+var marker347 = L.marker([0, 0]);
+var marker348 = L.marker([0, 0]);
+var marker349 = L.marker([0, 0]);
+var marker350 = L.marker([0, 0]);
+
+}
+
+function createMap() {
+  const selectedFloor = document.getElementById('floor').value;
+  const selectedOffice = document.getElementById('office').value;
+  var imageUrl = ''; // Replace with the actual path to your image
+  var imageBounds = [[0, 0], [0, 0]];
+  var markers = []; // Declare an array to store markers
+  const rawStartDate = document.getElementById('bookingDate').value;
+  const startDate = formatDate(rawStartDate);
+  let bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+
+
+// Create the map if it doesn't exist
+if (!map) {map = L.map('map').setView([0, 0], 3.25);}
+
+    map.on('mousemove', function (e) {
+    const { lat, lng } = e.latlng;
+    document.getElementById('coordinates-display').innerHTML = `lat = ${lat.toFixed(4)}; long = ${lng.toFixed(4)}`
+  });
+
+  for (let deskNum = 1; deskNum <= 350; deskNum++) { //Remove all markers
+            var marker = window['marker' + deskNum];
+            if (map.hasLayer(marker)){map.removeLayer(marker);}     
+    }
+
+switch (selectedOffice) {
+case 'Hoxton':
+    if (selectedFloor == 1) { //Hoxton 
+        imageUrl = 'Hoxton - Floor 1.jpg'; 
+        imageBounds = [[-50, -50], [50, 50]];
+        for (let deskNum = 1; deskNum <= 20; deskNum++) {
+            marker = window['marker' + deskNum];
+            if (deskNum === 1) { lat = -22.56; long = -16.69; }
+            if (deskNum === 2) { lat = -18.3234; long = -10.6073}
+            if (deskNum === 3) { lat = -23; long = -10.5; }
+            if (deskNum === 4) { lat = -17.3193; long = -6.5204}
+            if (deskNum === 5) { lat = -21.9075; long = -6.4682 }
+            if (deskNum === 6) {lat = -12.5386; long = -0.2939}
+            if (deskNum === 7) { lat = -17.1515; long = -0.1483 }
+            if (deskNum === 8) { lat = -21.7086; long = -0.1483}
+            if (deskNum === 9) { lat = -12.25; long = 4.25; }
+            if (deskNum === 10) { lat = -16.6048; long = 4.0704}
+            if (deskNum === 11) { lat = -22; long = 4.25; }
+            if (deskNum === 12) { lat = -12.25; long = 10.25; }
+            if (deskNum === 13) { lat = -16.5205; long = 10.2667}
+            if (deskNum === 14) { lat = -21.2998; long = 10.1788 }
+            if (deskNum === 15) { lat = -13; long = 14.75; }
+            if (deskNum === 16) { lat = -17.5; long = 14.75; }
+            if (deskNum === 17) { lat = -22; long = 14.75; }
+            if (deskNum === 18) { lat = -17.5; long = 20.75; }
+            if (deskNum === 19) { lat = -22; long = 20.75; }
+            if (deskNum === 20) { lat = -12.5037; long = 20.8040}
+            window['marker' + deskNum] = L.marker([lat, long], {icon: greenIcon}).addTo(map).bindPopup('Desk ' + deskNum);
+        }}
+    if (selectedFloor == 2) { //Hoxton 
+        imageUrl = 'Hoxton - Floor 2.jpg'; 
+        imageBounds = [[-50, -50], [50, 50]];
+        for (let deskNum = 1; deskNum <= 22; deskNum++) {
+            marker = window['marker' + deskNum];
+            if (deskNum === 1) { lat = 23.4; long = -24.9; }
+            if (deskNum === 2) { lat = 23.6; long = -17.7; }
+            if (deskNum === 3) { lat = 23.4; long = -10.3; }
+            if (deskNum === 4) { lat = 23.6; long = -2.9; }
+            if (deskNum === 5) { lat = 4.8; long = -25; }
+            if (deskNum === 6) { lat = 4.8; long = -17.6; }
+            if (deskNum === 7) { lat = 4.8; long = -10.2; }
+            if (deskNum === 8) { lat = 4.8; long = -3; }
+            if (deskNum === 9) { lat = -26.22; long = -25.29; }
+            if (deskNum === 10) { lat = -32.89; long = -25.29; }
+            if (deskNum === 11) { lat = -26.67; long = -17.38; }
+            if (deskNum === 12) { lat = -33.25; long = -17.38; }
+            if (deskNum === 13) { lat = 26.86; long = 24.68; }
+            if (deskNum === 14) { lat = 24.61; long = 29.39; }
+            if (deskNum === 15) { lat = 18.86; long = 32.46; }
+            if (deskNum === 16) { lat = 10.97; long = 32.2; }
+            if (deskNum === 17) { lat = 4.7; long = 29.5; }
+            if (deskNum === 18) { lat = 2.42; long = 24.88; }
+            if (deskNum === 19) { lat = 4.7; long = 20.1; }
+            if (deskNum === 20) { lat = 11.27; long = 17.27; }
+            if (deskNum === 21) { lat = 18.94; long = 17.17; }
+            if (deskNum === 22) { lat = 24.62; long = 20.16; }
+            window['marker' + deskNum] = L.marker([lat, long], {icon: greenIcon}).addTo(map).bindPopup('Desk ' + deskNum);
+        }
+    }
+    if (selectedFloor == 3) { //Hoxton 
+        imageUrl = 'Hoxton - Floor 3.jpg'; 
+        imageBounds = [[-50, -50], [1, 50]];
+        for (let deskNum = 1; deskNum <= 24; deskNum++) {
+            marker = window['marker' + deskNum];
+            if (deskNum === 1) { lat = -34.3661; long = -39.4682; }
+            if (deskNum === 2) { lat = -40.0360; long = -39.3599; }
+            if (deskNum === 3) { lat = -34.3706; long = -30.8382; }
+            if (deskNum === 4) { lat = -40.0613; long = -30.7388; }
+            if (deskNum === 5) { lat = -34.3888; long = -24.4202; }
+            if (deskNum === 6) { lat = -39.9855; long = -24.3982; }
+            if (deskNum === 7) { lat = -34.2890; long = -15.8853; }
+            if (deskNum === 8) { lat = -40.0949; long = -15.8414; }
+            if (deskNum === 9) { lat = -34.4432; long = -9.3552; }
+            if (deskNum === 10) { lat = -39.9603; long = -9.4052; }
+            if (deskNum === 11) { lat = -34.4250; long = -0.6961; }
+            if (deskNum === 12) { lat = -40.0360; long = -0.8497; }
+            if (deskNum === 13) { lat = -40.0940; long = 5.5916; }
+            if (deskNum === 14) { lat = -40.1873; long = 14.2223; }
+            if (deskNum === 15) { lat = -17.5864; long = 35.8868; }
+            if (deskNum === 16) { lat = -20.6174; long = 39.5673; }
+            if (deskNum === 17) { lat = -25.4383; long = 39.6002; }
+            if (deskNum === 18) { lat = -29.9026; long = 39.5782; }
+            if (deskNum === 19) { lat = -34.2572; long = 39.5892; }
+            if (deskNum === 20) { lat = -36.9982; long = 35.8319; }
+            if (deskNum === 21) { lat = -34.2209; long = 32.0636; }
+            if (deskNum === 22) { lat = -30.0073; long = 32.1954; }
+            if (deskNum === 23) { lat = -25.3887; long = 32.0636; }
+            if (deskNum === 24) { lat = -20.6893; long = 32.0966; }
+            window['marker' + deskNum] = L.marker([lat, long], {icon: greenIcon}).addTo(map).bindPopup('Desk ' + deskNum);
+        }
+    }
+        break;
+case 'Manchester':
+if (selectedFloor == 1) {
+imageUrl = 'Manchester - Floor 1.png'; 
+imageBounds = [[-50, -50], [1, 50]];
+for (let deskNum = 1; deskNum <= 186; deskNum++) {
+marker = window['marker' + deskNum];
+if (deskNum === 1) { lat = -15.1092; long = -22.7470; }
+if (deskNum === 2) { lat = -15.0986; long = -21.2858; }
+if (deskNum === 3) { lat = -15.1092; long = -19.9455; }
+if (deskNum === 4) { lat = -15.1517; long = -18.5392; }
+if (deskNum === 5) { lat = -15.7024; long = -22.7799; }
+if (deskNum === 6) { lat = -15.6812; long = -21.3737; }
+if (deskNum === 7) { lat = -15.7024; long = -19.9894; }
+if (deskNum === 8) { lat = -15.7235; long = -18.6161; }
+if (deskNum === 9) { lat = -17.9761; long = -22.7059; }
+if (deskNum === 10) { lat = -17.9552; long = -21.2886; }
+if (deskNum === 11) { lat = -17.9500; long = -19.9428; }
+if (deskNum === 12) { lat = -18.5291; long = -22.7279; }
+if (deskNum === 13) { lat = -18.5603; long = -21.3271; }
+if (deskNum === 14) { lat = -18.5603; long = -19.9703; }
+if (deskNum === 15) { lat = -20.7090; long = -22.7224; }
+if (deskNum === 16) { lat = -20.7193; long = -21.3326; }
+if (deskNum === 17) { lat = -20.6987; long = -19.9483; }
+if (deskNum === 18) { lat = -21.2629; long = -22.7279; }
+if (deskNum === 19) { lat = -21.2476; long = -21.3161; }
+if (deskNum === 20) { lat = -21.2527; long = -19.9044; }
+if (deskNum === 21) { lat = -23.4170; long = -22.7333; }
+if (deskNum === 22) { lat = -23.4019; long = -21.3161; }
+if (deskNum === 23) { lat = -23.3818; long = -19.9044; }
+if (deskNum === 24) { lat = -23.9754; long = -22.8267; }
+if (deskNum === 25) { lat = -23.9603; long = -21.3820; }
+if (deskNum === 26) { lat = -23.9854; long = -19.9373; }
+if (deskNum === 27) { lat = -25.8444; long = -22.3624; }
+if (deskNum === 28) { lat = -25.8979; long = -20.8986; }
+if (deskNum === 29) { lat = -25.8583; long = -19.4814; }
+if (deskNum === 30) { lat = -26.4648; long = -22.3983; }
+if (deskNum === 31) { lat = -26.4844; long = -20.9700; }
+if (deskNum === 32) { lat = -26.4156; long = -19.6022; }
+if (deskNum === 33) { lat = -28.6127; long = -22.4312; }
+if (deskNum === 34) { lat = -28.6030; long = -21.0030; }
+if (deskNum === 35) { lat = -28.6223; long = -19.5913; }
+if (deskNum === 36) { lat = -29.1218; long = -22.3295; }
+if (deskNum === 37) { lat = -29.1801; long = -20.8272; }
+if (deskNum === 38) { lat = -29.1370; long = -19.6187; }
+if (deskNum === 39) { lat = -31.1930; long = -22.3434; }
+if (deskNum === 40) { lat = -31.1695; long = -20.9206; }
+if (deskNum === 41) { lat = -31.1789; long = -19.5309; }
+if (deskNum === 42) { lat = -31.6477; long = -22.3653; }
+if (deskNum === 43) { lat = -31.6571; long = -20.9426; }
+if (deskNum === 44) { lat = -31.6617; long = -19.6187; }
+if (deskNum === 45) { lat = -33.6503; long = -22.3543; }
+if (deskNum === 46) { lat = -33.6960; long = -20.9425; }
+if (deskNum === 47) { lat = -33.7006; long = -19.5802; }
+if (deskNum === 48) { lat = -34.1700; long = -22.3543; }
+if (deskNum === 49) { lat = -34.1519; long = -20.9480; }
+if (deskNum === 50) { lat = -34.1519; long = -19.5528; }
+if (deskNum === 51) {lat = -36.1401; long = -22.5041}
+if (deskNum === 52) {lat = -36.1845; long = -21.1089}
+if (deskNum === 53) {lat = -36.1756; long = -19.6587}
+if (deskNum === 54) {lat = -36.6883; long = -22.4162}
+if (deskNum === 55) {lat = -36.7235; long = -21.0429}
+if (deskNum === 56) {lat = -36.6795; long = -19.6257}
+if (deskNum === 57) {lat = -38.4816; long = -22.4457}
+if (deskNum === 58) {lat = -38.4472; long = -21.0288}
+if (deskNum === 59) {lat = -38.4558; long = -19.6448}
+if (deskNum === 60) {lat = -38.4472; long = -18.1071}
+if (deskNum === 61) {lat = -38.9530; long = -22.4567}
+if (deskNum === 62) {lat = -38.9872; long = -21.0727}
+if (deskNum === 63) {lat = -39.0128; long = -19.6998}
+if (deskNum === 64) {lat = -38.9957; long = -18.2938}
+if (deskNum === 65) {lat = -40.8907; long = -21.2928}
+if (deskNum === 66) {lat = -41.6175; long = -21.2378}
+if (deskNum === 67) {lat = -42.3281; long = -21.2488}
+if (deskNum === 68) {lat = -43.0709; long = -21.2488}
+if (deskNum === 69) {lat = -40.8658; long = -20.3372}
+if (deskNum === 70) {lat = -41.6093; long = -20.3262}
+if (deskNum === 71) {lat = -42.3149; long = -20.3309}
+if (deskNum === 72) {lat = -43.0739; long = -20.3254}
+if (deskNum === 73) {lat = -41.6370; long = -16.9088}
+if (deskNum === 74) {lat = -42.3433; long = -16.9033}
+if (deskNum === 75) {lat = -43.0900; long = -16.9198}
+if (deskNum === 76) {lat = -41.6206; long = -15.9587}
+if (deskNum === 77) {lat = -42.3433; long = -15.9752}
+if (deskNum === 78) {lat = -43.0779; long = -15.9752}
+if (deskNum === 79) {lat = -39.4659; long = 7.8977}
+if (deskNum === 80) {lat = -40.1831; long = 7.9087}
+if (deskNum === 81) {lat = -40.9426; long = 7.8977}
+if (deskNum === 82) {lat = -41.6935; long = 7.9196}
+if (deskNum === 83) {lat = -42.4275; long = 7.8757}
+if (deskNum === 84) {lat = -39.4744; long = 8.7984}
+if (deskNum === 85) {lat = -40.2251; long = 8.8423}
+if (deskNum === 86) {lat = -40.9924; long = 8.7984}
+if (deskNum === 87) {lat = -41.7181; long = 8.8093}
+if (deskNum === 88) {lat = -42.4357; long = 8.7874}
+if (deskNum === 89) {lat = -39.4490; long = 11.9617}
+if (deskNum === 90) {lat = -40.1999; long = 11.9288}
+if (deskNum === 91) {lat = -40.9343; long = 11.9288}
+if (deskNum === 92) {lat = -41.6770; long = 11.9190}
+if (deskNum === 93) {lat = -42.4681; long = 11.9080}
+if (deskNum === 94) {lat = -39.4659; long = 12.8086}
+if (deskNum === 95) {lat = -40.2083; long = 12.7867}
+if (deskNum === 96) {lat = -40.9426; long = 12.8196}
+if (deskNum === 97) {lat = -41.6770; long = 12.8086}
+if (deskNum === 98) {lat = -42.4194; long = 12.8416}
+if (deskNum === 99) {lat = -39.4659; long = 15.9840}
+if (deskNum === 100) {lat = -40.2083; long = 15.9620}
+if (deskNum === 101) {lat = -40.9509; long = 15.9401}
+if (deskNum === 102) {lat = -41.7017; long = 15.9840}
+if (deskNum === 103) {lat = -42.4357; long = 15.9401}
+if (deskNum === 104) {lat = -39.4744; long = 16.8407}
+if (deskNum === 105) {lat = -40.1999; long = 16.8737}
+if (deskNum === 106) {lat = -40.9758; long = 16.8957}
+if (deskNum === 107) {lat = -41.6955; long = 16.8524}
+if (deskNum === 108) {lat = -42.4701; long = 16.8139}
+if (deskNum === 109) {lat = -41.7037; long = 19.9887}
+if (deskNum === 110) {lat = -42.4164; long = 20.0084}
+if (deskNum === 111) {lat = -41.6986; long = 20.9368}
+if (deskNum === 112) {lat = -42.4321; long = 20.9315}
+if (deskNum === 113) {lat = -37.2063; long = 17.9399}
+if (deskNum === 114) {lat = -37.2238; long = 19.3898}
+if (deskNum === 115) {lat = -37.2238; long = 20.7408}
+if (deskNum === 116) {lat = -37.2063; long = 22.1687}
+if (deskNum === 117) {lat = -37.7208; long = 18.0278}
+if (deskNum === 118) {lat = -37.7153; long = 19.4288}
+if (deskNum === 119) {lat = -37.6675; long = 20.7688}
+if (deskNum === 120) {lat = -37.6936; long = 22.1750}
+if (deskNum === 121) {lat = -34.8014; long = 18.0063}
+if (deskNum === 122) {lat = -34.7924; long = 19.4232}
+if (deskNum === 123) {lat = -34.8251; long = 20.7640}
+if (deskNum === 124) {lat = -34.7698; long = 22.1802}
+if (deskNum === 125) {lat = -35.2826; long = 18.0173}
+if (deskNum === 126) {lat = -35.3051; long = 19.4232}
+if (deskNum === 127) {lat = -35.3051; long = 20.8072}
+if (deskNum === 128) {lat = -35.2737; long = 22.3339}
+if (deskNum === 129) {lat = -32.3000; long = 18.0043}
+if (deskNum === 130) {lat = -32.2861; long = 19.4322}
+if (deskNum === 131) {lat = -32.2861; long = 20.7888}
+if (deskNum === 132) {lat = -32.3186; long = 22.2057}
+if (deskNum === 133) {lat = -32.8093; long = 18.0428}
+if (deskNum === 134) {lat = -32.7955; long = 19.4213}
+if (deskNum === 135) {lat = -32.8140; long = 20.7778}
+if (deskNum === 136) {lat = -32.7989; long = 22.1576}
+if (deskNum === 137) {lat = -28.0490; long = 18.0227}
+if (deskNum === 138) {lat = -28.0635; long = 19.4286}
+if (deskNum === 139) {lat = -28.0878; long = 20.8071}
+if (deskNum === 140) {lat = -28.0344; long = 22.1691}
+if (deskNum === 141) {lat = -28.6243; long = 18.0062}
+if (deskNum === 142) {lat = -28.5906; long = 19.4341}
+if (deskNum === 143) {lat = -28.6099; long = 20.8401}
+if (deskNum === 144) {lat = -28.6002; long = 22.2021}
+if (deskNum === 145) {lat = -23.9687; long = 18.0265}
+if (deskNum === 146) {lat = -23.9687; long = 19.4066}
+if (deskNum === 147) {lat = -23.9486; long = 20.7741}
+if (deskNum === 148) {lat = -23.9637; long = 22.1694}
+if (deskNum === 149) {lat = -24.5147; long = 18.0281}
+if (deskNum === 150) {lat = -24.5147; long = 19.4011}
+if (deskNum === 151) {lat = -24.5197; long = 20.7633}
+if (deskNum === 152) {lat = -24.5097; long = 22.1583}
+if (deskNum === 153) {lat = -21.2305; long = 18.0118}
+if (deskNum === 154) {lat = -21.2459; long = 19.4068}
+if (deskNum === 155) {lat = -21.2203; long = 20.7742}
+if (deskNum === 156) {lat = -21.2203; long = 22.1857}
+if (deskNum === 157) {lat = -21.8182; long = 18.0228}
+if (deskNum === 158) {lat = -21.8016; long = 19.4043}
+if (deskNum === 159) {lat = -21.8233; long = 20.7962}
+if (deskNum === 160) {lat = -21.7965; long = 22.1835}
+if (deskNum === 161) {lat = -18.3624; long = 18.0115}
+if (deskNum === 162) {lat = -18.3936; long = 19.3900}
+if (deskNum === 163) {lat = -18.3832; long = 20.7961}
+if (deskNum === 164) {lat = -18.3676; long = 22.1913}
+if (deskNum === 165) {lat = -18.9661; long = 17.9953}
+if (deskNum === 166) {lat = -18.9713; long = 19.4012}
+if (deskNum === 167) {lat = -18.9972; long = 20.7907}
+if (deskNum === 168) {lat = -18.9713; long = 22.1966}
+if (deskNum === 169) {lat = -14.1952; long = -15.4480}
+if (deskNum === 170) {lat = -15.1199; long = -15.5139}
+if (deskNum === 171) {lat = -16.1250; long = -15.4589}
+if (deskNum === 172) {lat = -14.1952; long = -14.5363}
+if (deskNum === 173) {lat = -15.1729; long = -14.5583}
+if (deskNum === 174) {lat = -16.0617; long = -14.5692}
+if (deskNum === 175) {lat = -14.2059; long = -11.3400}
+if (deskNum === 176) {lat = -15.1093; long = -11.2851}
+if (deskNum === 177) {lat = -16.1567; long = -11.3290}
+if (deskNum === 178) {lat = -14.1632; long = -10.3734}
+if (deskNum === 179) {lat = -15.1517; long = -10.3844}
+if (deskNum === 180) {lat = -16.1039; long = -10.3295}
+if (deskNum === 181) {lat = -14.1632; long = -7.1881}
+if (deskNum === 182) {lat = -15.1199; long = -7.1441}
+if (deskNum === 183) {lat = -16.0934; long = -7.1990}
+if (deskNum === 184) {lat = -14.1846; long = -6.2544}
+if (deskNum === 185) {lat = -15.1623; long = -6.2215}
+if (deskNum === 186) {lat = -16.0565; long = -6.3099}
+window['marker' + deskNum] = L.marker([lat, long], {icon: greenIcon}).addTo(map).bindPopup('Desk ' + deskNum);
+}
+}
+break;   
+case 'Leeds':
+if (selectedFloor == 1) { //Leeds
+imageUrl = 'Leeds - Floor 1.png'; 
+imageBounds = [[-50, -50], [1, 50]];
+for (let deskNum = 1; deskNum <= 52; deskNum++) {
+marker = window['marker' + deskNum];
+if (deskNum === 1) {lat = -19.1400; long = 13.5451}
+if (deskNum === 2) {lat = -19.1400; long = 14.8302}
+if (deskNum === 3) {lat = -19.1400; long = 16.0934}
+if (deskNum === 4) {lat = -19.1504; long = 17.4224}
+if (deskNum === 5) {lat = -19.7202; long = 13.5671}
+if (deskNum === 6) {lat = -19.7306; long = 14.8632}
+if (deskNum === 7) {lat = -19.7099; long = 16.1263}
+if (deskNum === 8) {lat = -19.6685; long = 17.4224}
+if (deskNum === 9) {lat = -17.7644; long = 23.3442}
+if (deskNum === 10) {lat = -17.8063; long = 24.1351}
+if (deskNum === 11) {lat = -18.7347; long = 23.2893}
+if (deskNum === 12) {lat = -18.7243; long = 24.1351}
+if (deskNum === 13) {lat = -21.0794; long = 20.7191}
+if (deskNum === 14) {lat = -21.0794; long = 22.0371}
+if (deskNum === 15) {lat = -21.1102; long = 23.3113}
+if (deskNum === 16) {lat = -21.0589; long = 24.7062}
+if (deskNum === 17) {lat = -21.6524; long = 20.7301}
+if (deskNum === 18) {lat = -21.6422; long = 22.0481}
+if (deskNum === 19) {lat = -21.6115; long = 23.3442}
+if (deskNum === 20) {lat = -21.6524; long = 24.6074}
+if (deskNum === 21) {lat = -23.6496; long = 20.7296}
+if (deskNum === 22) {lat = -23.6597; long = 22.0587}
+if (deskNum === 23) {lat = -23.6295; long = 23.3328}
+if (deskNum === 24) {lat = -23.6597; long = 24.6619}
+if (deskNum === 25) {lat = -24.1819; long = 20.7406}
+if (deskNum === 26) {lat = -24.1819; long = 22.0587}
+if (deskNum === 27) {lat = -24.1819; long = 23.3438}
+if (deskNum === 28) {lat = -24.1618; long = 24.6070}
+if (deskNum === 29) {lat = -26.1703; long = 13.0172}
+if (deskNum === 30) {lat = -26.1505; long = 14.2913}
+if (deskNum === 31) {lat = -26.1604; long = 15.5984}
+if (deskNum === 32) {lat = -26.1407; long = 16.8945}
+if (deskNum === 33) {lat = -26.6622; long = 12.9842}
+if (deskNum === 34) {lat = -26.6426; long = 14.3023}
+if (deskNum === 35) {lat = -26.6819; long = 15.6094}
+if (deskNum === 36) {lat = -26.6426; long = 16.9165}
+if (deskNum === 37) {lat = -26.1407; long = 20.7389}
+if (deskNum === 38) {lat = -26.1308; long = 22.0460}
+if (deskNum === 39) {lat = -26.1308; long = 23.3201}
+if (deskNum === 40) {lat = -26.1111; long = 24.6382}
+if (deskNum === 41) {lat = -26.6524; long = 20.7608}
+if (deskNum === 42) {lat = -26.6328; long = 22.0569}
+if (deskNum === 43) {lat = -26.6720; long = 23.3640}
+if (deskNum === 44) {lat = -26.6524; long = 24.6272}
+if (deskNum === 45) {lat = -28.5701; long = 20.7738}
+if (deskNum === 46) {lat = -28.5701; long = 22.0589}
+if (deskNum === 47) {lat = -28.5990; long = 23.3660}
+if (deskNum === 48) {lat = -28.5604; long = 24.6511}
+if (deskNum === 49) {lat = -29.0898; long = 20.7738}
+if (deskNum === 50) {lat = -29.1114; long = 22.0530}
+if (deskNum === 51) {lat = -29.0898; long = 23.3001}
+if (deskNum === 52) {lat = -29.1090; long = 24.6162}
+window['marker' + deskNum] = L.marker([lat, long], {icon: greenIcon}).addTo(map).bindPopup('Desk ' + deskNum);
+}
+}
+break;
+case 'Birmingham':
+if (selectedFloor == 1) { //Birmingham
+imageUrl = 'Birmingham - Floor 1.png'; 
+imageBounds = [[-50, -50], [1, 50]];
+for (let deskNum = 1; deskNum <= 24; deskNum++) {
+marker = window['marker' + deskNum];
+if (deskNum === 1) {lat = -38.0914; long = -33.9052}
+if (deskNum === 2) {lat = -40.1202; long = -33.9052}
+if (deskNum === 3) {lat = -41.9922; long = -33.8393}
+if (deskNum === 4) {lat = -38.0395; long = -31.6865}
+if (deskNum === 5) {lat = -40.0865; long = -31.6425}
+if (deskNum === 6) {lat = -42.0738; long = -31.7084}
+if (deskNum === 7) {lat = -38.1087; long = -22.8981}
+if (deskNum === 8) {lat = -40.1202; long = -22.8981}
+if (deskNum === 9) {lat = -42.0901; long = -22.8542}
+if (deskNum === 10) {lat = -38.1260; long = -20.5476}
+if (deskNum === 11) {lat = -40.1034; long = -20.6794}
+if (deskNum === 12) {lat = -42.0249; long = -20.5476}
+if (deskNum === 13) {lat = -38.0741; long = -11.8014}
+if (deskNum === 14) {lat = -40.1202; long = -11.8892}
+if (deskNum === 15) {lat = -42.0412; long = -11.8892}
+if (deskNum === 16) {lat = -38.1433; long = -9.6705}
+if (deskNum === 17) {lat = -40.1202; long = -9.6705}
+if (deskNum === 18) {lat = -42.1553; long = -9.6046}
+if (deskNum === 19) {lat = -38.0395; long = -0.8614}
+if (deskNum === 20) {lat = -40.0529; long = -0.8614}
+if (deskNum === 21) {lat = -42.0738; long = -0.8175}
+if (deskNum === 22) {lat = -38.0049; long = 1.4030}
+if (deskNum === 23) {lat = -40.1034; long = 1.3810}
+if (deskNum === 24) {lat = -42.0086; long = 1.4025}
+window['marker' + deskNum] = L.marker([lat, long], {icon: greenIcon}).addTo(map).bindPopup('Desk ' + deskNum);
+}
+}
+break;
+case 'Eastleigh':
+if (selectedFloor == 1) { //Eastleigh
+imageUrl = 'Eastleigh - Floor 1.png';
+imageBounds = [[-50, -50], [1, 50]];
+for (let deskNum = 1; deskNum <= 329; deskNum++) {
+if (deskNum === 1) {lat = -16.9675; long = -37.1709}
+if (deskNum === 2) {lat = -16.9491; long = -35.7225}
+if (deskNum === 3) {lat = -16.9964; long = -34.3166}
+if (deskNum === 4) {lat = -16.9806; long = -32.8557}
+if (deskNum === 5) {lat = -17.5838; long = -37.1395}
+if (deskNum === 6) {lat = -17.5642; long = -35.7086}
+if (deskNum === 7) {lat = -17.5681; long = -34.2672}
+if (deskNum === 8) {lat = -17.5681; long = -32.9381}
+if (deskNum === 9) {lat = -19.7071; long = -37.1563}
+if (deskNum === 10) {lat = -19.7123; long = -35.7449}
+if (deskNum === 11) {lat = -19.7123; long = -34.2676}
+if (deskNum === 12) {lat = -19.7124; long = -32.9546}
+if (deskNum === 13) {lat = -20.2751; long = -37.1561}
+if (deskNum === 14) {lat = -20.2699; long = -35.7392}
+if (deskNum === 15) {lat = -20.2957; long = -34.3278}
+if (deskNum === 16) {lat = -20.2493; long = -32.8944}
+if (deskNum === 17) {lat = -22.3628; long = -37.1345}
+if (deskNum === 18) {lat = -22.3730; long = -35.7011}
+if (deskNum === 19) {lat = -22.3476; long = -34.3006}
+if (deskNum === 20) {lat = -22.3577; long = -32.9331}
+if (deskNum === 21) {lat = -22.9356; long = -37.1400}
+if (deskNum === 22) {lat = -22.9255; long = -35.7011}
+if (deskNum === 23) {lat = -22.9306; long = -34.3281}
+if (deskNum === 24) {lat = -22.9154; long = -32.9057}
+if (deskNum === 25) {lat = -27.0543; long = -37.3329}
+if (deskNum === 26) {lat = -27.0543; long = -35.8611}
+if (deskNum === 27) {lat = -27.6008; long = -37.3549}
+if (deskNum === 28) {lat = -27.6300; long = -35.8501}
+if (deskNum === 29) {lat = -29.7215; long = -37.0695}
+if (deskNum === 30) {lat = -30.2544; long = -37.0914}
+if (deskNum === 31) {lat = -30.0168; long = -35.6745}
+if (deskNum === 32) {lat = -32.3011; long = -37.3990}
+if (deskNum === 33) {lat = -32.2825; long = -35.9821}
+if (deskNum === 34) {lat = -36.9104; long = -37.1568}
+if (deskNum === 35) {lat = -36.9543; long = -35.7179}
+if (deskNum === 36) {lat = -36.9631; long = -34.3340}
+if (deskNum === 37) {lat = -36.9368; long = -32.8951}
+if (deskNum === 38) {lat = -37.4444; long = -37.1898}
+if (deskNum === 39) {lat = -37.4531; long = -35.7179}
+if (deskNum === 40) {lat = -37.4444; long = -34.3559}
+if (deskNum === 41) {lat = -37.4444; long = -33.0159}
+if (deskNum === 42) {lat = -39.1855; long = -37.1678}
+if (deskNum === 43) {lat = -39.2025; long = -35.7838}
+if (deskNum === 44) {lat = -39.2025; long = -34.3669}
+if (deskNum === 45) {lat = -39.2025; long = -32.9609}
+if (deskNum === 46) {lat = -39.6776; long = -37.1568}
+if (deskNum === 47) {lat = -39.6692; long = -35.7834}
+if (deskNum === 48) {lat = -39.6692; long = -34.3119}
+if (deskNum === 49) {lat = -39.6945; long = -32.9609}
+if (deskNum === 50) {lat = -41.3810; long = -37.2007}
+if (deskNum === 51) {lat = -41.3727; long = -35.7288}
+if (deskNum === 52) {lat = -41.3810; long = -34.3339}
+if (deskNum === 53) {lat = -41.3562; long = -32.9060}
+if (deskNum === 54) {lat = -41.8491; long = -37.1567}
+if (deskNum === 55) {lat = -41.8491; long = -35.7069}
+if (deskNum === 56) {lat = -41.8491; long = -34.3449}
+if (deskNum === 57) {lat = -41.8716; long = -32.9157}
+if (deskNum === 58) {lat = -10.0825; long = -27.3684}
+if (deskNum === 59) {lat = -11.1192; long = -27.3574}
+if (deskNum === 60) {lat = -12.0877; long = -27.3465}
+if (deskNum === 61) {lat = -13.0849; long = -27.3355}
+if (deskNum === 62) {lat = -10.1149; long = -26.4018}
+if (deskNum === 63) {lat = -11.0976; long = -26.4348}
+if (deskNum === 64) {lat = -12.0662; long = -26.4564}
+if (deskNum === 65) {lat = -13.1063; long = -26.4338}
+if (deskNum === 66) {lat = -10.0825; long = -23.2165}
+if (deskNum === 67) {lat = -11.1084; long = -23.2384}
+if (deskNum === 68) {lat = -12.0796; long = -23.2098}
+if (deskNum === 69) {lat = -13.0501; long = -23.2263}
+if (deskNum === 70) {lat = -10.0676; long = -22.1681}
+if (deskNum === 71) {lat = -10.9948; long = -22.1657}
+if (deskNum === 72) {lat = -12.0796; long = -22.3085}
+if (deskNum === 73) {lat = -12.9738; long = -22.1736}
+if (deskNum === 74) {lat = -16.9701; long = -26.5272}
+if (deskNum === 75) {lat = -16.9596; long = -25.0881}
+if (deskNum === 76) {lat = -16.9228; long = -23.4954}
+if (deskNum === 77) {lat = -17.5786; long = -26.5105}
+if (deskNum === 78) {lat = -17.5786; long = -25.0716}
+if (deskNum === 79) {lat = -17.5786; long = -23.6217}
+if (deskNum === 80) {lat = -19.7021; long = -27.9281}
+if (deskNum === 81) {lat = -19.6762; long = -26.5002}
+if (deskNum === 82) {lat = -19.7021; long = -25.0942}
+if (deskNum === 83) {lat = -19.6866; long = -23.6709}
+if (deskNum === 84) {lat = -20.2648; long = -27.9002}
+if (deskNum === 85) {lat = -20.3060; long = -26.4830}
+if (deskNum === 86) {lat = -20.2545; long = -25.1210}
+if (deskNum === 87) {lat = -20.2545; long = -23.6436}
+if (deskNum === 88) {lat = -22.3412; long = -27.9440}
+if (deskNum === 89) {lat = -22.3437; long = -26.5161}
+if (deskNum === 90) {lat = -22.3425; long = -25.1597}
+if (deskNum === 91) {lat = -22.3425; long = -23.6819}
+if (deskNum === 92) {lat = -22.9129; long = -28.0052}
+if (deskNum === 93) {lat = -22.9129; long = -26.5663}
+if (deskNum === 94) {lat = -22.9331; long = -25.1604}
+if (deskNum === 95) {lat = -22.9331; long = -23.6776}
+if (deskNum === 96) {lat = -24.9612; long = -27.9943}
+if (deskNum === 97) {lat = -24.9712; long = -26.5444}
+if (deskNum === 98) {lat = -24.9712; long = -25.1165}
+if (deskNum === 99) {lat = -24.9911; long = -23.7215}
+if (deskNum === 100) {lat = -25.5213; long = -28.0422}
+if (deskNum === 101) {lat = -25.5312; long = -26.4276}
+if (deskNum === 102) {lat = -25.5368; long = -25.1616}
+if (deskNum === 103) {lat = -25.5252; long = -23.7119}
+if (deskNum === 104) {lat = -27.5577; long = -27.9901}
+if (deskNum === 105) {lat = -27.5625; long = -26.5183}
+if (deskNum === 106) {lat = -27.5625; long = -24.9915}
+if (deskNum === 107) {lat = -27.5507; long = -23.7529}
+if (deskNum === 108) {lat = -28.1035; long = -27.9716}
+if (deskNum === 109) {lat = -28.1035; long = -26.5547}
+if (deskNum === 110) {lat = -28.1156; long = -25.1596}
+if (deskNum === 111) {lat = -28.0599; long = -23.5888}
+if (deskNum === 112) {lat = -30.0715; long = -27.9771}
+if (deskNum === 113) {lat = -30.0620; long = -26.6041}
+if (deskNum === 114) {lat = -30.0810; long = -25.1432}
+if (deskNum === 115) {lat = -30.0620; long = -23.6494}
+if (deskNum === 116) {lat = -30.6356; long = -27.9496}
+if (deskNum === 117) {lat = -30.6167; long = -26.5766}
+if (deskNum === 118) {lat = -30.6261; long = -25.1322}
+if (deskNum === 119) {lat = -30.6025; long = -23.7263}
+if (deskNum === 120) {lat = -32.3382; long = -25.7536}
+if (deskNum === 121) {lat = -32.3382; long = -24.8639}
+if (deskNum === 122) {lat = -33.1767; long = -25.7747}
+if (deskNum === 123) {lat = -33.1399; long = -24.8411}
+if (deskNum === 124) {lat = -34.8832; long = -27.9636}
+if (deskNum === 125) {lat = -34.8877; long = -26.5632}
+if (deskNum === 126) {lat = -34.8697; long = -25.1298}
+if (deskNum === 127) {lat = -34.8832; long = -23.6854}
+if (deskNum === 128) {lat = -35.3908; long = -27.9526}
+if (deskNum === 129) {lat = -35.3913; long = -26.5765}
+if (deskNum === 130) {lat = -35.3868; long = -25.1486}
+if (deskNum === 131) {lat = -35.3958; long = -23.7040}
+if (deskNum === 132) {lat = -37.2040; long = -27.8835}
+if (deskNum === 133) {lat = -37.1953; long = -26.4556}
+if (deskNum === 134) {lat = -37.1821; long = -25.0332}
+if (deskNum === 135) {lat = -37.1997; long = -23.6273}
+if (deskNum === 136) {lat = -37.6968; long = -27.8341}
+if (deskNum === 137) {lat = -37.6838; long = -26.4120}
+if (deskNum === 138) {lat = -37.6881; long = -25.0280}
+if (deskNum === 139) {lat = -37.6881; long = -23.5892}
+if (deskNum === 140) {lat = -39.4256; long = -27.8675}
+if (deskNum === 141) {lat = -39.4171; long = -26.4396}
+if (deskNum === 142) {lat = -39.4076; long = -25.0383}
+if (deskNum === 143) {lat = -39.4245; long = -23.6074}
+if (deskNum === 144) {lat = -39.8939; long = -27.8534}
+if (deskNum === 145) {lat = -39.8876; long = -26.4006}
+if (deskNum === 146) {lat = -39.8792; long = -25.0027}
+if (deskNum === 147) {lat = -39.8897; long = -23.6047}
+if (deskNum === 148) {lat = -41.4149; long = -27.8122}
+if (deskNum === 149) {lat = -41.4149; long = -26.3703}
+if (deskNum === 150) {lat = -41.4067; long = -24.9559}
+if (deskNum === 151) {lat = -41.4191; long = -23.5416}
+if (deskNum === 152) {lat = -41.8829; long = -27.8231}
+if (deskNum === 153) {lat = -41.8890; long = -26.3403}
+if (deskNum === 154) {lat = -41.8798; long = -24.9672}
+if (deskNum === 155) {lat = -41.8798; long = -23.5118}
+if (deskNum === 156) {lat = -44.5944; long = -27.8952}
+if (deskNum === 157) {lat = -45.3251; long = -27.8842}
+if (deskNum === 158) {lat = -46.0237; long = -27.9172}
+if (deskNum === 159) {lat = -46.7342; long = -27.8618}
+if (deskNum === 160) {lat = -44.5846; long = -26.9611}
+if (deskNum === 161) {lat = -45.3348; long = -26.9611}
+if (deskNum === 162) {lat = -46.0180; long = -26.9611}
+if (deskNum === 163) {lat = -46.6853; long = -26.8293}
+if (deskNum === 164) {lat = -44.6003; long = -23.8740}
+if (deskNum === 165) {lat = -45.2923; long = -23.8464}
+if (deskNum === 166) {lat = -46.0027; long = -23.8628}
+if (deskNum === 167) {lat = -46.6928; long = -23.8409}
+if (deskNum === 168) {lat = -44.5885; long = -22.9073}
+if (deskNum === 169) {lat = -45.3232; long = -22.9292}
+if (deskNum === 170) {lat = -46.0141; long = -22.9347}
+if (deskNum === 171) {lat = -46.7003; long = -22.9291}
+if (deskNum === 172) {lat = -44.6022; long = -19.8316}
+if (deskNum === 173) {lat = -45.3116; long = -19.8365}
+if (deskNum === 174) {lat = -46.0132; long = -19.8444}
+if (deskNum === 175) {lat = -46.6860; long = -19.8069}
+if (deskNum === 176) {lat = -44.5917; long = -18.8677}
+if (deskNum === 177) {lat = -45.2993; long = -18.8897}
+if (deskNum === 178) {lat = -46.0256; long = -18.8808}
+if (deskNum === 179) {lat = -46.7041; long = -18.8918}
+if (deskNum === 180) {lat = -44.6081; long = -15.8155}
+if (deskNum === 181) {lat = -45.3039; long = -15.7990}
+if (deskNum === 182) {lat = -46.0094; long = -15.8759}
+if (deskNum === 183) {lat = -46.7220; long = -15.8595}
+if (deskNum === 184) {lat = -44.5925; long = -14.9368}
+if (deskNum === 185) {lat = -45.2971; long = -14.9089}
+if (deskNum === 186) {lat = -45.9722; long = -14.9643}
+if (deskNum === 187) {lat = -46.7041; long = -14.9038}
+if (deskNum === 188) {lat = -10.1149; long = -19.0513}
+if (deskNum === 189) {lat = -11.1299; long = -19.1062}
+if (deskNum === 190) {lat = -12.1092; long = -19.0733}
+if (deskNum === 191) {lat = -13.0956; long = -19.0733}
+if (deskNum === 192) {lat = -10.1366; long = -18.1397}
+if (deskNum === 193) {lat = -11.1407; long = -18.1287}
+if (deskNum === 194) {lat = -12.0985; long = -18.1397}
+if (deskNum === 195) {lat = -13.0742; long = -18.1726}
+if (deskNum === 196) {lat = -10.0825; long = -14.9653}
+if (deskNum === 197) {lat = -11.0868; long = -15.0092}
+if (deskNum === 198) {lat = -12.0447; long = -15.0092}
+if (deskNum === 199) {lat = -13.0635; long = -15.0202}
+if (deskNum === 200) {lat = -16.1586; long = -18.6684}
+if (deskNum === 201) {lat = -16.1339; long = -17.1952}
+if (deskNum === 202) {lat = -16.1224; long = -15.7883}
+if (deskNum === 203) {lat = -19.6193; long = -18.6883}
+if (deskNum === 204) {lat = -19.6193; long = -17.2330}
+if (deskNum === 205) {lat = -19.6090; long = -15.7666}
+if (deskNum === 206) {lat = -19.5935; long = -14.3930}
+if (deskNum === 207) {lat = -16.4071; long = -12.1902}
+if (deskNum === 208) {lat = -17.3795; long = -12.1188}
+if (deskNum === 209) {lat = -18.2737; long = -12.2177}
+if (deskNum === 210) {lat = -21.6013; long = 9.3701}
+if (deskNum === 211) {lat = -21.5809; long = 10.8090}
+if (deskNum === 212) {lat = -21.6217; long = 12.2149}
+if (deskNum === 213) {lat = -21.6013; long = 13.6429}
+if (deskNum === 214) {lat = -22.1824; long = 9.4250}
+if (deskNum === 215) {lat = -22.2027; long = 10.7870}
+if (deskNum === 216) {lat = -22.1620; long = 12.1930}
+if (deskNum === 217) {lat = -22.1518; long = 13.8296}
+if (deskNum === 218) {lat = -21.6217; long = 18.5652}
+if (deskNum === 219) {lat = -21.6319; long = 19.9492}
+if (deskNum === 220) {lat = -21.6013; long = 21.3310}
+if (deskNum === 221) {lat = -21.6243; long = 22.7778}
+if (deskNum === 222) {lat = -22.2027; long = 18.5416}
+if (deskNum === 223) {lat = -22.2129; long = 19.9805}
+if (deskNum === 224) {lat = -22.1620; long = 21.3425}
+if (deskNum === 225) {lat = -22.1620; long = 22.9132}
+if (deskNum === 226) {lat = -24.2320; long = 9.3892}
+if (deskNum === 227) {lat = -24.2520; long = 10.7874}
+if (deskNum === 228) {lat = -24.2520; long = 12.2263}
+if (deskNum === 229) {lat = -24.2921; long = 13.6102}
+if (deskNum === 230) {lat = -24.8217; long = 9.4034}
+if (deskNum === 231) {lat = -24.8316; long = 10.7874}
+if (deskNum === 232) {lat = -24.8316; long = 12.2373}
+if (deskNum === 233) {lat = -24.8017; long = 13.6432}
+if (deskNum === 234) {lat = -24.2921; long = 18.5326}
+if (deskNum === 235) {lat = -24.2320; long = 19.9715}
+if (deskNum === 236) {lat = -24.2420; long = 21.3445}
+if (deskNum === 237) {lat = -24.2720; long = 22.7724}
+if (deskNum === 238) {lat = -24.8017; long = 18.5326}
+if (deskNum === 239) {lat = -24.8017; long = 19.9496}
+if (deskNum === 240) {lat = -24.8217; long = 21.3665}
+if (deskNum === 241) {lat = -24.8217; long = 22.7944}
+if (deskNum === 242) {lat = -26.8510; long = 9.4039}
+if (deskNum === 243) {lat = -26.8756; long = 10.8099}
+if (deskNum === 244) {lat = -26.8853; long = 12.2433}
+if (deskNum === 245) {lat = -26.8461; long = 13.6331}
+if (deskNum === 246) {lat = -27.4230; long = 9.3872}
+if (deskNum === 247) {lat = -27.4132; long = 10.7821}
+if (deskNum === 248) {lat = -27.4376; long = 12.2378}
+if (deskNum === 249) {lat = -27.4327; long = 13.6715}
+if (deskNum === 250) {lat = -26.8756; long = 18.6267}
+if (deskNum === 251) {lat = -26.8756; long = 19.9887}
+if (deskNum === 252) {lat = -26.8608; long = 21.4168}
+if (deskNum === 253) {lat = -26.7775; long = 23.1251}
+if (deskNum === 254) {lat = -27.4084; long = 18.5664}
+if (deskNum === 255) {lat = -27.4181; long = 19.9778}
+if (deskNum === 256) {lat = -27.4084; long = 21.4442}
+if (deskNum === 257) {lat = -27.4084; long = 22.8504}
+if (deskNum === 258) {lat = -29.4037; long = 9.4203}
+if (deskNum === 259) {lat = -29.4037; long = 10.8372}
+if (deskNum === 260) {lat = -29.4181; long = 12.2102}
+if (deskNum === 261) {lat = -29.4229; long = 13.6710}
+if (deskNum === 262) {lat = -29.9764; long = 9.4312}
+if (deskNum === 263) {lat = -29.9478; long = 10.9470}
+if (deskNum === 264) {lat = -29.9573; long = 12.2431}
+if (deskNum === 265) {lat = -29.9573; long = 13.6660}
+if (deskNum === 266) {lat = -29.4258; long = 18.5543}
+if (deskNum === 267) {lat = -29.4324; long = 19.9836}
+if (deskNum === 268) {lat = -29.4324; long = 21.3456}
+if (deskNum === 269) {lat = -29.4516; long = 22.8064}
+if (deskNum === 270) {lat = -29.9431; long = 18.5447}
+if (deskNum === 271) {lat = -29.9288; long = 19.9616}
+if (deskNum === 272) {lat = -29.9811; long = 21.3785}
+if (deskNum === 273) {lat = -29.9335; long = 22.7845}
+if (deskNum === 274) {lat = -32.0384; long = 18.5282}
+if (deskNum === 275) {lat = -32.0337; long = 19.9286}
+if (deskNum === 276) {lat = -32.0477; long = 21.4114}
+if (deskNum === 277) {lat = -32.0523; long = 22.8174}
+if (deskNum === 278) {lat = -32.5862; long = 18.5501}
+if (deskNum === 279) {lat = -32.6047; long = 19.9561}
+if (deskNum === 280) {lat = -32.5816; long = 21.3785}
+if (deskNum === 281) {lat = -32.5723; long = 22.7899}
+if (deskNum === 282) {lat = -34.5111; long = 18.5333}
+if (deskNum === 283) {lat = -34.5450; long = 19.9726}
+if (deskNum === 284) {lat = -34.5541; long = 21.3565}
+if (deskNum === 285) {lat = -34.5269; long = 22.8119}
+if (deskNum === 286) {lat = -35.0682; long = 18.5556}
+if (deskNum === 287) {lat = -35.0547; long = 19.9121}
+if (deskNum === 288) {lat = -35.0547; long = 21.4169}
+if (deskNum === 289) {lat = -35.0795; long = 22.7831}
+if (deskNum === 290) {lat = -36.2399; long = 9.3489}
+if (deskNum === 291) {lat = -36.2133; long = 10.7768}
+if (deskNum === 292) {lat = -36.1956; long = 12.2047}
+if (deskNum === 293) {lat = -36.2044; long = 13.5997}
+if (deskNum === 294) {lat = -36.7521; long = 9.3819}
+if (deskNum === 295) {lat = -36.7081; long = 10.7988}
+if (deskNum === 296) {lat = -36.7521; long = 12.2377}
+if (deskNum === 297) {lat = -36.7081; long = 13.6876}
+if (deskNum === 298) {lat = -36.9192; long = 18.5330}
+if (deskNum === 299) {lat = -36.9192; long = 19.9390}
+if (deskNum === 300) {lat = -36.9192; long = 21.3449}
+if (deskNum === 301) {lat = -36.9192; long = 22.7948}
+if (deskNum === 302) {lat = -37.4095; long = 18.5880}
+if (deskNum === 303) {lat = -37.4269; long = 19.9829}
+if (deskNum === 304) {lat = -37.4269; long = 21.3339}
+if (deskNum === 305) {lat = -37.4007; long = 22.8168}
+if (deskNum === 306) {lat = -38.4988; long = 9.3928}
+if (deskNum === 307) {lat = -38.5160; long = 10.7988}
+if (deskNum === 308) {lat = -38.4988; long = 12.2102}
+if (deskNum === 309) {lat = -38.5117; long = 13.6386}
+if (deskNum === 310) {lat = -39.0341; long = 9.3819}
+if (deskNum === 311) {lat = -39.0085; long = 10.7988}
+if (deskNum === 312) {lat = -38.9957; long = 12.2157}
+if (deskNum === 313) {lat = -38.9744; long = 13.6770}
+if (deskNum === 314) {lat = -39.2301; long = 18.5443}
+if (deskNum === 315) {lat = -39.2131; long = 19.9722}
+if (deskNum === 316) {lat = -39.2131; long = 21.3949}
+if (deskNum === 317) {lat = -39.2046; long = 22.7848}
+if (deskNum === 318) {lat = -39.7262; long = 18.5718}
+if (deskNum === 319) {lat = -39.7262; long = 19.9942}
+if (deskNum === 320) {lat = -39.7083; long = 21.3789}
+if (deskNum === 321) {lat = -39.7083; long = 22.8342}
+if (deskNum === 322) {lat = -41.4818; long = 18.5827}
+if (deskNum === 323) {lat = -41.4695; long = 19.9831}
+if (deskNum === 324) {lat = -41.4901; long = 21.3726}
+if (deskNum === 325) {lat = -41.4654; long = 22.8170}
+if (deskNum === 326) {lat = -41.9411; long = 18.5333}
+if (deskNum === 327) {lat = -41.9370; long = 19.9941}
+if (deskNum === 328) {lat = -41.9452; long = 21.4001}
+if (deskNum === 329) {lat = -41.9370; long = 22.8994}
+marker = window['marker' + deskNum];
+
+
+window['marker' + deskNum] = L.marker([lat, long], {icon: greenIcon}).addTo(map).bindPopup('Desk ' + deskNum);
+}
+}
+break;
+case 'Worthing':
+if (selectedFloor == 1) { //Worthing
+imageUrl = 'Worthing - Floor 1.png'; 
+imageBounds = [[-50, -50], [1, 50]];
+for (let deskNum = 1; deskNum <= 60; deskNum++) {
+marker = window['marker' + deskNum];
+if (deskNum === 1) {lat = -34.8003; long = -24.8300}
+if (deskNum === 2) {lat = -35.7956; long = -24.7970}
+if (deskNum === 3) {lat = -36.8049; long = -24.7861}
+if (deskNum === 4) {lat = -37.7317; long = -24.7970}
+if (deskNum === 5) {lat = -34.7100; long = -23.6108}
+if (deskNum === 6) {lat = -35.7421; long = -23.5888}
+if (deskNum === 7) {lat = -36.7521; long = -23.6220}
+if (deskNum === 8) {lat = -37.7577; long = -23.6110}
+if (deskNum === 9) {lat = -28.7725; long = 10.1721}
+if (deskNum === 10) {lat = -29.8550; long = 10.1721}
+if (deskNum === 11) {lat = -30.9541; long = 10.2160}
+if (deskNum === 12) {lat = -32.0314; long = 10.1501}
+if (deskNum === 13) {lat = -28.7533; long = 11.3364}
+if (deskNum === 14) {lat = -29.8645; long = 11.3254}
+if (deskNum === 15) {lat = -30.9635; long = 11.3913}
+if (deskNum === 16) {lat = -32.0314; long = 11.3691}
+if (deskNum === 17) {lat = -28.7918; long = 15.8079}
+if (deskNum === 18) {lat = -29.8931; long = 15.7860}
+if (deskNum === 19) {lat = -30.9447; long = 15.8079}
+if (deskNum === 20) {lat = -32.0314; long = 15.7970}
+if (deskNum === 21) {lat = -28.7629; long = 16.9722}
+if (deskNum === 22) {lat = -29.8740; long = 16.9503}
+if (deskNum === 23) {lat = -30.9635; long = 17.0052}
+if (deskNum === 24) {lat = -32.0314; long = 16.9722}
+if (deskNum === 25) {lat = -29.5783; long = 21.1900}
+if (deskNum === 26) {lat = -29.5878; long = 22.9914}
+if (deskNum === 27) {lat = -30.3208; long = 21.1791}
+if (deskNum === 28) {lat = -30.3302; long = 22.9475}
+if (deskNum === 29) {lat = -35.1694; long = 11.6442}
+if (deskNum === 30) {lat = -36.2133; long = 11.6553}
+if (deskNum === 31) {lat = -37.2172; long = 11.6444}
+if (deskNum === 32) {lat = -38.2253; long = 11.6444}
+if (deskNum === 33) {lat = -35.1783; long = 12.8416}
+if (deskNum === 34) {lat = -36.2044; long = 12.8196}
+if (deskNum === 35) {lat = -37.2260; long = 12.8196}
+if (deskNum === 36) {lat = -38.2253; long = 12.8416}
+if (deskNum === 37) {lat = -35.2053; long = 17.5437}
+if (deskNum === 38) {lat = -36.2399; long = 17.7304}
+if (deskNum === 39) {lat = -37.2872; long = 17.4668}
+if (deskNum === 40) {lat = -38.2512; long = 17.5876}
+if (deskNum === 41) {lat = -35.2053; long = 18.7299}
+if (deskNum === 42) {lat = -36.2310; long = 18.7409}
+if (deskNum === 43) {lat = -37.2522; long = 18.7959}
+if (deskNum === 44) {lat = -38.2770; long = 18.6750}
+if (deskNum === 45) {lat = -33.8294; long = 23.4986}
+if (deskNum === 46) {lat = -33.8659; long = 25.3219}
+if (deskNum === 47) {lat = -33.8659; long = 27.0354}
+if (deskNum === 48) {lat = -33.8294; long = 28.8477}
+if (deskNum === 49) {lat = -34.5383; long = 23.5535}
+if (deskNum === 50) {lat = -34.5292; long = 25.3329}
+if (deskNum === 51) {lat = -34.5473; long = 27.0573}
+if (deskNum === 52) {lat = -34.5021; long = 28.8367}
+if (deskNum === 53) {lat = -36.9368; long = 23.4766}
+if (deskNum === 54) {lat = -36.9280; long = 25.2999}
+if (deskNum === 55) {lat = -36.9631; long = 27.0573}
+if (deskNum === 56) {lat = -36.9631; long = 28.8477}
+if (deskNum === 57) {lat = -37.6360; long = 23.4875}
+if (deskNum === 58) {lat = -37.5664; long = 25.2999}
+if (deskNum === 59) {lat = -37.5490; long = 27.0134}
+if (deskNum === 60) {lat = -37.4967; long = 28.9795}
+
+
+window['marker' + deskNum] = L.marker([lat, long], {icon: greenIcon}).addTo(map).bindPopup('Desk ' + deskNum);
+}
+}
+break;
+case 'Leatherhead':
+if (selectedFloor == 1) { 
+imageUrl = 'Leatherhead - Floor 1.png'; 
+imageBounds = [[-50, -50], [1, 50]];
+for (let deskNum = 1; deskNum <= 168; deskNum++) {
+marker = window['marker' + deskNum];
+if (deskNum === 1) {lat = -22.4161; long = -32.3449}
+if (deskNum === 2) {lat = -22.3857; long = -30.4227}
+if (deskNum === 3) {lat = -22.4263; long = -28.5554}
+if (deskNum === 4) {lat = -23.1657; long = -32.3559}
+if (deskNum === 5) {lat = -23.1353; long = -30.4227}
+if (deskNum === 6) {lat = -23.0949; long = -28.5774}
+if (deskNum === 7) {lat = -26.0025; long = -32.3780}
+if (deskNum === 8) {lat = -26.0815; long = -30.4118}
+if (deskNum === 9) {lat = -26.0519; long = -28.5336}
+if (deskNum === 10) {lat = -26.8192; long = -32.3560}
+if (deskNum === 11) {lat = -26.7996; long = -30.4338}
+if (deskNum === 12) {lat = -26.8192; long = -28.5665}
+if (deskNum === 13) {lat = -29.6069; long = -32.3559}
+if (deskNum === 14) {lat = -29.6165; long = -30.4228}
+if (deskNum === 15) {lat = -29.6069; long = -28.5445}
+if (deskNum === 16) {lat = -30.3208; long = -32.3449}
+if (deskNum === 17) {lat = -30.3587; long = -30.4447}
+if (deskNum === 18) {lat = -30.3302; long = -28.5665}
+if (deskNum === 19) {lat = -40.8928; long = -29.4009}
+if (deskNum === 20) {lat = -41.8491; long = -29.4339}
+if (deskNum === 21) {lat = -42.7591; long = -29.4229}
+if (deskNum === 22) {lat = -43.6878; long = -29.4669}
+if (deskNum === 23) {lat = -40.8762; long = -28.1708}
+if (deskNum === 24) {lat = -41.8164; long = -28.1818}
+if (deskNum === 25) {lat = -42.7591; long = -28.1818}
+if (deskNum === 26) {lat = -43.7037; long = -28.1927}
+if (deskNum === 27) {lat = -40.8845; long = -23.7443}
+if (deskNum === 28) {lat = -41.8573; long = -23.7443}
+if (deskNum === 29) {lat = -42.7430; long = -23.7443}
+if (deskNum === 30) {lat = -43.6639; long = -23.7552}
+if (deskNum === 31) {lat = -40.8679; long = -22.4811}
+if (deskNum === 32) {lat = -41.8164; long = -22.4801}
+if (deskNum === 33) {lat = -42.7349; long = -22.5020}
+
+if (deskNum === 34) {lat = -43.6937; long = -22.4947}
+if (deskNum === 35) {lat = -40.8845; long = -18.0410}
+if (deskNum === 36) {lat = -41.8410; long = -18.0410}
+if (deskNum === 37) {lat = -42.7753; long = -18.0520}
+if (deskNum === 38) {lat = -43.6957; long = -18.0740}
+if (deskNum === 39) {lat = -40.8845; long = -16.7559}
+if (deskNum === 40) {lat = -41.8164; long = -16.7999}
+if (deskNum === 41) {lat = -42.7430; long = -16.7999}
+if (deskNum === 42) {lat = -43.6957; long = -16.8108}
+if (deskNum === 43) {lat = -38.5009; long = -11.4052}
+if (deskNum === 44) {lat = -38.5009; long = -9.5379}
+if (deskNum === 45) {lat = -38.4321; long = -7.4949}
+if (deskNum === 46) {lat = -39.1258; long = -13.3274}
+if (deskNum === 47) {lat = -39.1344; long = -11.4491}
+if (deskNum === 48) {lat = -39.1344; long = -9.4830}
+if (deskNum === 49) {lat = -39.1429; long = -7.6157}
+if (deskNum === 50) {lat = -38.5267; long = -3.2198}
+if (deskNum === 51) {lat = -38.4923; long = -1.2756}
+if (deskNum === 52) {lat = -38.5095; long = 0.6246}
+if (deskNum === 53) {lat = -38.5009; long = 2.5138}
+if (deskNum === 54) {lat = -39.1088; long = -3.1759}
+if (deskNum === 55) {lat = -39.1344; long = -1.2427}
+if (deskNum === 56) {lat = -39.1258; long = 0.5806}
+if (deskNum === 57) {lat = -39.1344; long = 2.5028}
+if (deskNum === 58) {lat = -41.8573; long = -10.1962}
+if (deskNum === 59) {lat = -42.7934; long = -10.1958}
+if (deskNum === 60) {lat = -43.7017; long = -10.2068}
+if (deskNum === 61) {lat = -41.8102; long = -8.9709}
+if (deskNum === 62) {lat = -42.8136; long = -8.9435}
+if (deskNum === 63) {lat = -43.6659; long = -8.9710}
+if (deskNum === 64) {lat = -41.8307; long = -4.4940}
+if (deskNum === 65) {lat = -42.7490; long = -4.5050}
+if (deskNum === 66) {lat = -43.6699; long = -4.5161}
+if (deskNum === 67) {lat = -41.8102; long = -3.2529}
+if (deskNum === 68) {lat = -42.7410; long = -3.2474}
+if (deskNum === 69) {lat = -43.6897; long = -3.2804}
+if (deskNum === 70) {lat = -41.8102; long = 1.1805}
+if (deskNum === 71) {lat = -42.7450; long = 1.2024}
+if (deskNum === 72) {lat = -43.6699; long = 1.1805}
+if (deskNum === 73) {lat = -41.7980; long = 2.4766}
+if (deskNum === 74) {lat = -42.7490; long = 2.3942}
+if (deskNum === 75) {lat = -43.6580; long = 2.4436}
+if (deskNum === 76) {lat = -40.8367; long = 6.8767}
+if (deskNum === 77) {lat = -41.7949; long = 6.8606}
+if (deskNum === 78) {lat = -42.7289; long = 6.9480}
+if (deskNum === 79) {lat = -43.6798; long = 6.8623}
+if (deskNum === 80) {lat = -40.8575; long = 8.1345}
+if (deskNum === 81) {lat = -41.8020; long = 8.1126}
+if (deskNum === 82) {lat = -42.7369; long = 8.1345}
+if (deskNum === 83) {lat = -43.6560; long = 8.1587}
+
+if (deskNum === 84) {lat = -40.8741; long = 12.5572}
+if (deskNum === 85) {lat = -41.8430; long = 12.5682}
+if (deskNum === 86) {lat = -42.7531; long = 12.5792}
+if (deskNum === 87) {lat = -43.6937; long = 12.5352}
+if (deskNum === 88) {lat = -40.8741; long = 13.8144}
+if (deskNum === 89) {lat = -41.7939; long = 13.7759}
+if (deskNum === 90) {lat = -42.7571; long = 13.8089}
+if (deskNum === 91) {lat = -43.6580; long = 13.8034}
+window['marker' + deskNum] = L.marker([lat, long], {icon: greenIcon}).addTo(map).bindPopup('Desk ' + deskNum);
+}
+}
+break;
+case 'x':
+if (selectedFloor == 1) { 
+imageUrl = 'Leeds - Floor 1.png'; 
+imageBounds = [[-50, -50], [1, 50]];
+for (let deskNum = 1; deskNum <= 168; deskNum++) {
+marker = window['marker' + deskNum];
+
+window['marker' + deskNum] = L.marker([lat, long], {icon: greenIcon}).addTo(map).bindPopup('Desk ' + deskNum);
+}
+}
+break;
+ default:
+  break;
+}
+    if (imageOverlay) {imageOverlay.remove();}
+    imageOverlay = L.imageOverlay(imageUrl, imageBounds).addTo(map);
+    let numberBooked = 0;
+     totalDesks = 0;
+    for (let deskNum = 1; deskNum <= 350; deskNum++) { //Change Desk To Booked
+        const isDeskBooked = bookingArray.some(booking => 
+            booking.deskNum == deskNum && 
+            booking.floor == selectedFloor && 
+            booking.office == selectedOffice &&  
+            booking.startDate == startDate
+        );
+        
+      
+        marker = window['marker' + deskNum];
+        if (map.hasLayer(marker)){totalDesks = totalDesks + 1}
+        if (isDeskBooked) {
+
+          const bookedDesk = bookingArray.find(booking => 
+            booking.deskNum == deskNum && 
+            booking.floor == selectedFloor && 
+            booking.office == selectedOffice &&  
+            booking.startDate == startDate
+        );
+
+        const usernameBooked = bookedDesk.username;
+
+
+            numberBooked = numberBooked + 1;
+            if (marker) {
+            var markerLatLng = marker.getLatLng();
+            latitude = markerLatLng.lat;
+            longitude = markerLatLng.lng;
+            if (map.hasLayer(marker)){map.removeLayer(marker);}
+            window['marker' + deskNum] = L.marker([latitude, longitude], {icon: redIcon}).addTo(map).bindPopup('Desk ' + deskNum + '\nBooked By: ' + usernameBooked);
+            }   
+        }
+    }
+
+const desksRemaining = document.getElementById('desksRemaining');
+const desksBooked = document.getElementById('desksBooked');
+desksBooked.innerHTML = 'Number Booked: ' +  numberBooked;
+deskRemainingInteger = totalDesks - numberBooked;
+desksRemaining.innerHTML = 'Desks Remaining: ' + deskRemainingInteger ;
+
+
+function createMarkerClickHandler(marker, deskNumber) {
+  return function () {
+    if (!marker._icon.classList.contains('booked-marker')) {
+      document.getElementById('selectedDesk').value = deskNumber;
+    }
+  };
+}
+{
+marker1.on('click', createMarkerClickHandler(marker1, 1));
+marker2.on('click', createMarkerClickHandler(marker2, 2));
+marker3.on('click', createMarkerClickHandler(marker3, 3));
+marker4.on('click', createMarkerClickHandler(marker4, 4));
+marker5.on('click', createMarkerClickHandler(marker5, 5));
+marker6.on('click', createMarkerClickHandler(marker6, 6));
+marker7.on('click', createMarkerClickHandler(marker7, 7));
+marker8.on('click', createMarkerClickHandler(marker8, 8));
+marker9.on('click', createMarkerClickHandler(marker9, 9));
+marker10.on('click', createMarkerClickHandler(marker10, 10));
+marker11.on('click', createMarkerClickHandler(marker11, 11));
+marker12.on('click', createMarkerClickHandler(marker12, 12));
+marker13.on('click', createMarkerClickHandler(marker13, 13));
+marker14.on('click', createMarkerClickHandler(marker14, 14));
+marker15.on('click', createMarkerClickHandler(marker15, 15));
+marker16.on('click', createMarkerClickHandler(marker16, 16));
+marker17.on('click', createMarkerClickHandler(marker17, 17));
+marker18.on('click', createMarkerClickHandler(marker18, 18));
+marker19.on('click', createMarkerClickHandler(marker19, 19));
+marker20.on('click', createMarkerClickHandler(marker20, 20));
+marker21.on('click', createMarkerClickHandler(marker21, 21));
+marker22.on('click', createMarkerClickHandler(marker22, 22));
+marker23.on('click', createMarkerClickHandler(marker23, 23));
+marker24.on('click', createMarkerClickHandler(marker24, 24));
+marker25.on('click', createMarkerClickHandler(marker25, 25));
+marker26.on('click', createMarkerClickHandler(marker26, 26));
+marker27.on('click', createMarkerClickHandler(marker27, 27));
+marker28.on('click', createMarkerClickHandler(marker28, 28));
+marker29.on('click', createMarkerClickHandler(marker29, 29));
+marker30.on('click', createMarkerClickHandler(marker30, 30));
+marker31.on('click', createMarkerClickHandler(marker31, 31));
+marker32.on('click', createMarkerClickHandler(marker32, 32));
+marker33.on('click', createMarkerClickHandler(marker33, 33));
+marker34.on('click', createMarkerClickHandler(marker34, 34));
+marker35.on('click', createMarkerClickHandler(marker35, 35));
+marker36.on('click', createMarkerClickHandler(marker36, 36));
+marker37.on('click', createMarkerClickHandler(marker37, 37));
+marker38.on('click', createMarkerClickHandler(marker38, 38));
+marker39.on('click', createMarkerClickHandler(marker39, 39));
+marker40.on('click', createMarkerClickHandler(marker40, 40));
+marker41.on('click', createMarkerClickHandler(marker41, 41));
+marker42.on('click', createMarkerClickHandler(marker42, 42));
+marker43.on('click', createMarkerClickHandler(marker43, 43));
+marker44.on('click', createMarkerClickHandler(marker44, 44));
+marker45.on('click', createMarkerClickHandler(marker45, 45));
+marker46.on('click', createMarkerClickHandler(marker46, 46));
+marker47.on('click', createMarkerClickHandler(marker47, 47));
+marker48.on('click', createMarkerClickHandler(marker48, 48));
+marker49.on('click', createMarkerClickHandler(marker49, 49));
+marker50.on('click', createMarkerClickHandler(marker50, 50));
+marker51.on('click', createMarkerClickHandler(marker51, 51));
+marker52.on('click', createMarkerClickHandler(marker52, 52));
+marker53.on('click', createMarkerClickHandler(marker53, 53));
+marker54.on('click', createMarkerClickHandler(marker54, 54));
+marker55.on('click', createMarkerClickHandler(marker55, 55));
+marker56.on('click', createMarkerClickHandler(marker56, 56));
+marker57.on('click', createMarkerClickHandler(marker57, 57));
+marker58.on('click', createMarkerClickHandler(marker58, 58));
+marker59.on('click', createMarkerClickHandler(marker59, 59));
+marker60.on('click', createMarkerClickHandler(marker60, 60));
+marker61.on('click', createMarkerClickHandler(marker61, 61));
+marker62.on('click', createMarkerClickHandler(marker62, 62));
+marker63.on('click', createMarkerClickHandler(marker63, 63));
+marker64.on('click', createMarkerClickHandler(marker64, 64));
+marker65.on('click', createMarkerClickHandler(marker65, 65));
+marker66.on('click', createMarkerClickHandler(marker66, 66));
+marker67.on('click', createMarkerClickHandler(marker67, 67));
+marker68.on('click', createMarkerClickHandler(marker68, 68));
+marker69.on('click', createMarkerClickHandler(marker69, 69));
+marker70.on('click', createMarkerClickHandler(marker70, 70));
+marker71.on('click', createMarkerClickHandler(marker71, 71));
+marker72.on('click', createMarkerClickHandler(marker72, 72));
+marker73.on('click', createMarkerClickHandler(marker73, 73));
+marker74.on('click', createMarkerClickHandler(marker74, 74));
+marker75.on('click', createMarkerClickHandler(marker75, 75));
+marker76.on('click', createMarkerClickHandler(marker76, 76));
+marker77.on('click', createMarkerClickHandler(marker77, 77));
+marker78.on('click', createMarkerClickHandler(marker78, 78));
+marker79.on('click', createMarkerClickHandler(marker79, 79));
+marker80.on('click', createMarkerClickHandler(marker80, 80));
+marker81.on('click', createMarkerClickHandler(marker81, 81));
+marker82.on('click', createMarkerClickHandler(marker82, 82));
+marker83.on('click', createMarkerClickHandler(marker83, 83));
+marker84.on('click', createMarkerClickHandler(marker84, 84));
+marker85.on('click', createMarkerClickHandler(marker85, 85));
+marker86.on('click', createMarkerClickHandler(marker86, 86));
+marker87.on('click', createMarkerClickHandler(marker87, 87));
+marker88.on('click', createMarkerClickHandler(marker88, 88));
+marker89.on('click', createMarkerClickHandler(marker89, 89));
+marker90.on('click', createMarkerClickHandler(marker90, 90));
+marker91.on('click', createMarkerClickHandler(marker91, 91));
+marker92.on('click', createMarkerClickHandler(marker92, 92));
+marker93.on('click', createMarkerClickHandler(marker93, 93));
+marker94.on('click', createMarkerClickHandler(marker94, 94));
+marker95.on('click', createMarkerClickHandler(marker95, 95));
+marker96.on('click', createMarkerClickHandler(marker96, 96));
+marker97.on('click', createMarkerClickHandler(marker97, 97));
+marker98.on('click', createMarkerClickHandler(marker98, 98));
+marker99.on('click', createMarkerClickHandler(marker99, 99));
+marker100.on('click', createMarkerClickHandler(marker100, 100));
+marker101.on('click', createMarkerClickHandler(marker101, 101));
+marker102.on('click', createMarkerClickHandler(marker102, 102));
+marker103.on('click', createMarkerClickHandler(marker103, 103));
+marker104.on('click', createMarkerClickHandler(marker104, 104));
+marker105.on('click', createMarkerClickHandler(marker105, 105));
+marker106.on('click', createMarkerClickHandler(marker106, 106));
+marker107.on('click', createMarkerClickHandler(marker107, 107));
+marker108.on('click', createMarkerClickHandler(marker108, 108));
+marker109.on('click', createMarkerClickHandler(marker109, 109));
+marker110.on('click', createMarkerClickHandler(marker110, 110));
+marker111.on('click', createMarkerClickHandler(marker111, 111));
+marker112.on('click', createMarkerClickHandler(marker112, 112));
+marker113.on('click', createMarkerClickHandler(marker113, 113));
+marker114.on('click', createMarkerClickHandler(marker114, 114));
+marker115.on('click', createMarkerClickHandler(marker115, 115));
+marker116.on('click', createMarkerClickHandler(marker116, 116));
+marker117.on('click', createMarkerClickHandler(marker117, 117));
+marker118.on('click', createMarkerClickHandler(marker118, 118));
+marker119.on('click', createMarkerClickHandler(marker119, 119));
+marker120.on('click', createMarkerClickHandler(marker120, 120));
+marker121.on('click', createMarkerClickHandler(marker121, 121));
+marker122.on('click', createMarkerClickHandler(marker122, 122));
+marker123.on('click', createMarkerClickHandler(marker123, 123));
+marker124.on('click', createMarkerClickHandler(marker124, 124));
+marker125.on('click', createMarkerClickHandler(marker125, 125));
+marker126.on('click', createMarkerClickHandler(marker126, 126));
+marker127.on('click', createMarkerClickHandler(marker127, 127));
+marker128.on('click', createMarkerClickHandler(marker128, 128));
+marker129.on('click', createMarkerClickHandler(marker129, 129));
+marker130.on('click', createMarkerClickHandler(marker130, 130));
+marker131.on('click', createMarkerClickHandler(marker131, 131));
+marker132.on('click', createMarkerClickHandler(marker132, 132));
+marker133.on('click', createMarkerClickHandler(marker133, 133));
+marker134.on('click', createMarkerClickHandler(marker134, 134));
+marker135.on('click', createMarkerClickHandler(marker135, 135));
+marker136.on('click', createMarkerClickHandler(marker136, 136));
+marker137.on('click', createMarkerClickHandler(marker137, 137));
+marker138.on('click', createMarkerClickHandler(marker138, 138));
+marker139.on('click', createMarkerClickHandler(marker139, 139));
+marker140.on('click', createMarkerClickHandler(marker140, 140));
+marker141.on('click', createMarkerClickHandler(marker141, 141));
+marker142.on('click', createMarkerClickHandler(marker142, 142));
+marker143.on('click', createMarkerClickHandler(marker143, 143));
+marker144.on('click', createMarkerClickHandler(marker144, 144));
+marker145.on('click', createMarkerClickHandler(marker145, 145));
+marker146.on('click', createMarkerClickHandler(marker146, 146));
+marker147.on('click', createMarkerClickHandler(marker147, 147));
+marker148.on('click', createMarkerClickHandler(marker148, 148));
+marker149.on('click', createMarkerClickHandler(marker149, 149));
+marker150.on('click', createMarkerClickHandler(marker150, 150));
+marker151.on('click', createMarkerClickHandler(marker151, 151));
+marker152.on('click', createMarkerClickHandler(marker152, 152));
+marker153.on('click', createMarkerClickHandler(marker153, 153));
+marker154.on('click', createMarkerClickHandler(marker154, 154));
+marker155.on('click', createMarkerClickHandler(marker155, 155));
+marker156.on('click', createMarkerClickHandler(marker156, 156));
+marker157.on('click', createMarkerClickHandler(marker157, 157));
+marker158.on('click', createMarkerClickHandler(marker158, 158));
+marker159.on('click', createMarkerClickHandler(marker159, 159));
+marker160.on('click', createMarkerClickHandler(marker160, 160));
+marker161.on('click', createMarkerClickHandler(marker161, 161));
+marker162.on('click', createMarkerClickHandler(marker162, 162));
+marker163.on('click', createMarkerClickHandler(marker163, 163));
+marker164.on('click', createMarkerClickHandler(marker163, 164));
+marker165.on('click', createMarkerClickHandler(marker165, 165));
+marker166.on('click', createMarkerClickHandler(marker166, 166));
+marker167.on('click', createMarkerClickHandler(marker167, 167));
+marker168.on('click', createMarkerClickHandler(marker168, 168));
+marker169.on('click', createMarkerClickHandler(marker169, 169));
+marker170.on('click', createMarkerClickHandler(marker170, 170));
+marker171.on('click', createMarkerClickHandler(marker171, 171));
+marker172.on('click', createMarkerClickHandler(marker172, 172));
+marker173.on('click', createMarkerClickHandler(marker173, 173));
+marker174.on('click', createMarkerClickHandler(marker174, 174));
+marker175.on('click', createMarkerClickHandler(marker175, 175));
+marker176.on('click', createMarkerClickHandler(marker176, 176));
+marker177.on('click', createMarkerClickHandler(marker177, 177));
+marker178.on('click', createMarkerClickHandler(marker178, 178));
+marker179.on('click', createMarkerClickHandler(marker179, 179));
+marker180.on('click', createMarkerClickHandler(marker180, 180));
+marker181.on('click', createMarkerClickHandler(marker181, 181));
+marker182.on('click', createMarkerClickHandler(marker182, 182));
+marker183.on('click', createMarkerClickHandler(marker183, 183));
+marker184.on('click', createMarkerClickHandler(marker184, 184));
+marker185.on('click', createMarkerClickHandler(marker185, 185));
+marker186.on('click', createMarkerClickHandler(marker186, 186));
+marker187.on('click', createMarkerClickHandler(marker187, 187));
+marker188.on('click', createMarkerClickHandler(marker188, 188));
+marker189.on('click', createMarkerClickHandler(marker189, 189));
+marker190.on('click', createMarkerClickHandler(marker190, 190));
+marker191.on('click', createMarkerClickHandler(marker191, 191));
+marker192.on('click', createMarkerClickHandler(marker192, 192));
+marker193.on('click', createMarkerClickHandler(marker193, 193));
+marker194.on('click', createMarkerClickHandler(marker194, 194));
+marker195.on('click', createMarkerClickHandler(marker195, 195));
+marker196.on('click', createMarkerClickHandler(marker196, 196));
+marker197.on('click', createMarkerClickHandler(marker197, 197));
+marker198.on('click', createMarkerClickHandler(marker198, 198));
+marker199.on('click', createMarkerClickHandler(marker199, 199));
+marker200.on('click', createMarkerClickHandler(marker200, 200));
+marker201.on('click', createMarkerClickHandler(marker201, 201));
+marker202.on('click', createMarkerClickHandler(marker202, 202));
+marker203.on('click', createMarkerClickHandler(marker203, 203));
+marker204.on('click', createMarkerClickHandler(marker204, 204));
+marker205.on('click', createMarkerClickHandler(marker205, 205));
+marker206.on('click', createMarkerClickHandler(marker206, 206));
+marker207.on('click', createMarkerClickHandler(marker207, 207));
+marker208.on('click', createMarkerClickHandler(marker208, 208));
+marker209.on('click', createMarkerClickHandler(marker209, 209));
+marker210.on('click', createMarkerClickHandler(marker210, 210));
+marker211.on('click', createMarkerClickHandler(marker211, 211));
+marker212.on('click', createMarkerClickHandler(marker212, 212));
+marker213.on('click', createMarkerClickHandler(marker213, 213));
+marker214.on('click', createMarkerClickHandler(marker214, 214));
+marker215.on('click', createMarkerClickHandler(marker215, 215));
+marker216.on('click', createMarkerClickHandler(marker216, 216));
+marker217.on('click', createMarkerClickHandler(marker217, 217));
+marker218.on('click', createMarkerClickHandler(marker218, 218));
+marker219.on('click', createMarkerClickHandler(marker219, 219));
+marker220.on('click', createMarkerClickHandler(marker220, 220));
+marker221.on('click', createMarkerClickHandler(marker221, 221));
+marker222.on('click', createMarkerClickHandler(marker222, 222));
+marker223.on('click', createMarkerClickHandler(marker223, 223));
+marker224.on('click', createMarkerClickHandler(marker224, 224));
+marker225.on('click', createMarkerClickHandler(marker225, 225));
+marker226.on('click', createMarkerClickHandler(marker226, 226));
+marker227.on('click', createMarkerClickHandler(marker227, 227));
+marker228.on('click', createMarkerClickHandler(marker228, 228));
+marker229.on('click', createMarkerClickHandler(marker229, 229));
+marker230.on('click', createMarkerClickHandler(marker230, 230));
+marker231.on('click', createMarkerClickHandler(marker231, 231));
+marker232.on('click', createMarkerClickHandler(marker232, 232));
+marker233.on('click', createMarkerClickHandler(marker233, 233));
+marker234.on('click', createMarkerClickHandler(marker234, 234));
+marker235.on('click', createMarkerClickHandler(marker235, 235));
+marker236.on('click', createMarkerClickHandler(marker236, 236));
+marker237.on('click', createMarkerClickHandler(marker237, 237));
+marker238.on('click', createMarkerClickHandler(marker238, 238));
+marker239.on('click', createMarkerClickHandler(marker239, 239));
+marker240.on('click', createMarkerClickHandler(marker240, 240));
+marker241.on('click', createMarkerClickHandler(marker241, 241));
+marker242.on('click', createMarkerClickHandler(marker242, 242));
+marker243.on('click', createMarkerClickHandler(marker243, 243));
+marker244.on('click', createMarkerClickHandler(marker244, 244));
+marker245.on('click', createMarkerClickHandler(marker245, 245));
+marker246.on('click', createMarkerClickHandler(marker246, 246));
+marker247.on('click', createMarkerClickHandler(marker247, 247));
+marker248.on('click', createMarkerClickHandler(marker248, 248));
+marker249.on('click', createMarkerClickHandler(marker249, 249));
+marker250.on('click', createMarkerClickHandler(marker250, 250));
+marker251.on('click', createMarkerClickHandler(marker251, 251));
+marker252.on('click', createMarkerClickHandler(marker252, 252));
+marker253.on('click', createMarkerClickHandler(marker253, 253));
+marker254.on('click', createMarkerClickHandler(marker254, 254));
+marker255.on('click', createMarkerClickHandler(marker255, 255));
+marker256.on('click', createMarkerClickHandler(marker256, 256));
+marker257.on('click', createMarkerClickHandler(marker257, 257));
+marker258.on('click', createMarkerClickHandler(marker258, 258));
+marker259.on('click', createMarkerClickHandler(marker259, 259));
+marker260.on('click', createMarkerClickHandler(marker260, 260));
+marker261.on('click', createMarkerClickHandler(marker261, 261));
+marker262.on('click', createMarkerClickHandler(marker262, 262));
+marker263.on('click', createMarkerClickHandler(marker263, 263));
+marker264.on('click', createMarkerClickHandler(marker264, 264));
+marker265.on('click', createMarkerClickHandler(marker265, 265));
+marker266.on('click', createMarkerClickHandler(marker266, 266));
+marker267.on('click', createMarkerClickHandler(marker267, 267));
+marker268.on('click', createMarkerClickHandler(marker268, 268));
+marker269.on('click', createMarkerClickHandler(marker269, 269));
+marker270.on('click', createMarkerClickHandler(marker270, 270));
+marker271.on('click', createMarkerClickHandler(marker271, 271));
+marker272.on('click', createMarkerClickHandler(marker272, 272));
+marker273.on('click', createMarkerClickHandler(marker273, 273));
+marker274.on('click', createMarkerClickHandler(marker274, 274));
+marker275.on('click', createMarkerClickHandler(marker275, 275));
+marker276.on('click', createMarkerClickHandler(marker276, 276));
+marker277.on('click', createMarkerClickHandler(marker277, 277));
+marker278.on('click', createMarkerClickHandler(marker278, 278));
+marker279.on('click', createMarkerClickHandler(marker279, 279));
+marker280.on('click', createMarkerClickHandler(marker280, 280));
+marker281.on('click', createMarkerClickHandler(marker281, 281));
+marker282.on('click', createMarkerClickHandler(marker282, 282));
+marker283.on('click', createMarkerClickHandler(marker283, 283));
+marker284.on('click', createMarkerClickHandler(marker284, 284));
+marker285.on('click', createMarkerClickHandler(marker285, 285));
+marker286.on('click', createMarkerClickHandler(marker286, 286));
+marker287.on('click', createMarkerClickHandler(marker287, 287));
+marker288.on('click', createMarkerClickHandler(marker288, 288));
+marker289.on('click', createMarkerClickHandler(marker289, 289));
+marker290.on('click', createMarkerClickHandler(marker290, 290));
+marker291.on('click', createMarkerClickHandler(marker291, 291));
+marker292.on('click', createMarkerClickHandler(marker292, 292));
+marker293.on('click', createMarkerClickHandler(marker293, 293));
+marker294.on('click', createMarkerClickHandler(marker294, 294));
+marker295.on('click', createMarkerClickHandler(marker295, 295));
+marker296.on('click', createMarkerClickHandler(marker296, 296));
+marker297.on('click', createMarkerClickHandler(marker297, 297));
+marker298.on('click', createMarkerClickHandler(marker298, 298));
+marker299.on('click', createMarkerClickHandler(marker299, 299));
+marker300.on('click', createMarkerClickHandler(marker300, 300));
+marker301.on('click', createMarkerClickHandler(marker301, 301));
+marker302.on('click', createMarkerClickHandler(marker302, 302));
+marker303.on('click', createMarkerClickHandler(marker303, 303));
+marker304.on('click', createMarkerClickHandler(marker304, 304));
+marker305.on('click', createMarkerClickHandler(marker305, 305));
+marker306.on('click', createMarkerClickHandler(marker306, 306));
+marker307.on('click', createMarkerClickHandler(marker307, 307));
+marker308.on('click', createMarkerClickHandler(marker308, 308));
+marker309.on('click', createMarkerClickHandler(marker309, 309));
+marker310.on('click', createMarkerClickHandler(marker310, 310));
+marker311.on('click', createMarkerClickHandler(marker311, 311));
+marker312.on('click', createMarkerClickHandler(marker312, 312));
+marker313.on('click', createMarkerClickHandler(marker313, 313));
+marker314.on('click', createMarkerClickHandler(marker314, 314));
+marker315.on('click', createMarkerClickHandler(marker315, 315));
+marker316.on('click', createMarkerClickHandler(marker316, 316));
+marker317.on('click', createMarkerClickHandler(marker317, 317));
+marker318.on('click', createMarkerClickHandler(marker318, 318));
+marker319.on('click', createMarkerClickHandler(marker319, 319));
+marker320.on('click', createMarkerClickHandler(marker320, 320));
+marker321.on('click', createMarkerClickHandler(marker321, 321));
+marker322.on('click', createMarkerClickHandler(marker322, 322));
+marker323.on('click', createMarkerClickHandler(marker323, 323));
+marker324.on('click', createMarkerClickHandler(marker324, 324));
+marker325.on('click', createMarkerClickHandler(marker325, 325));
+marker326.on('click', createMarkerClickHandler(marker326, 326));
+marker327.on('click', createMarkerClickHandler(marker327, 327));
+marker328.on('click', createMarkerClickHandler(marker328, 328));
+marker329.on('click', createMarkerClickHandler(marker329, 329));
+marker330.on('click', createMarkerClickHandler(marker330, 330));
+marker331.on('click', createMarkerClickHandler(marker331, 331));
+marker332.on('click', createMarkerClickHandler(marker332, 332));
+marker333.on('click', createMarkerClickHandler(marker333, 333));
+marker334.on('click', createMarkerClickHandler(marker334, 334));
+marker335.on('click', createMarkerClickHandler(marker335, 335));
+marker336.on('click', createMarkerClickHandler(marker336, 336));
+marker337.on('click', createMarkerClickHandler(marker337, 337));
+marker338.on('click', createMarkerClickHandler(marker338, 338));
+marker339.on('click', createMarkerClickHandler(marker339, 339));
+marker340.on('click', createMarkerClickHandler(marker340, 340));
+marker341.on('click', createMarkerClickHandler(marker341, 341));
+marker342.on('click', createMarkerClickHandler(marker342, 342));
+marker343.on('click', createMarkerClickHandler(marker343, 343));
+marker344.on('click', createMarkerClickHandler(marker344, 344));
+marker345.on('click', createMarkerClickHandler(marker345, 345));
+marker346.on('click', createMarkerClickHandler(marker346, 346));
+marker347.on('click', createMarkerClickHandler(marker347, 347));
+marker348.on('click', createMarkerClickHandler(marker348, 348));
+marker349.on('click', createMarkerClickHandler(marker349, 349));
+marker350.on('click', createMarkerClickHandler(marker350, 350));
+
+
+}
+}
+
+
+
+function getOptions(){
+   var spinSound = document.getElementById("spinSound");
+  spinSound.play();
+  let bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+  const selectedFloor = document.getElementById('floor').value;
+  const selectedOffice = document.getElementById('office').value;
+  const rawStartDate = document.getElementById('bookingDate').value;
+  const startDate = formatDate(rawStartDate);
+  options = [];
+  for (let deskNum = 1; deskNum <= totalDesks; deskNum++) { //Change Desk To Booked
+        const isDeskBooked = bookingArray.some(booking => 
+            booking.deskNum == deskNum && 
+            booking.floor == selectedFloor && 
+            booking.office == selectedOffice &&  
+            booking.startDate == startDate
+        );
+    if(!isDeskBooked){   
+      options.push(deskNum);
+    } 
+   }
+
+startAngle = 0;
+ arc = Math.PI / (options.length / 2);
+ spinTimeout = null;
+ spinArcStart = 10;
+ spinTime = 0;
+ spinTimeTotal = 0;
+ ctx;
+
+
+}
+
+function byte2Hex(n) {
+ var nybHexString = "0123456789ABCDEF";
+ return String(nybHexString.substr((n >> 4) & 0x0F,1)) + nybHexString.substr(n & 0x0F,1);
+}
+
+function RGB2Color(r,g,b) {
+ return '#' + byte2Hex(r) + byte2Hex(g) + byte2Hex(b);
+}
+
+function getColor(item, maxitem) {
+ var phase = 0;
+ var center = 128;
+ var width = 127;
+ var frequency = Math.PI*2/maxitem;
+ red   = Math.sin(frequency*item+2+phase) * width + center;
+ green = Math.sin(frequency*item+0+phase) * width + center;
+ blue  = Math.sin(frequency*item+4+phase) * width + center;
+ return RGB2Color(red,green,blue);
+}
+
+function drawRouletteWheel() {
+  
+ var canvas = document.getElementById("canvas");
+ if (canvas.getContext) {
+   var outsideRadius = 200;
+   var textRadius = 160;
+   var insideRadius = 125;
+
+   ctx = canvas.getContext("2d");
+   ctx.clearRect(0,0,500,500);
+
+   ctx.strokeStyle = "black";
+   ctx.lineWidth = 2;
+
+   ctx.font = 'bold 12px Helvetica, Arial';
+
+   for(var i = 0; i < options.length; i++) {
+     var angle = startAngle + i * arc;
+     //ctx.fillStyle = colors[i];
+     ctx.fillStyle = getColor(i, options.length);
+
+     ctx.beginPath();
+     ctx.arc(250, 250, outsideRadius, angle, angle + arc, false);
+     ctx.arc(250, 250, insideRadius, angle + arc, angle, true);
+     ctx.stroke();
+     ctx.fill();
+
+     ctx.save();
+     ctx.shadowOffsetX = -1;
+     ctx.shadowOffsetY = -1;
+     ctx.shadowBlur    = 0;
+     ctx.shadowColor   = "rgb(220,220,220)";
+     ctx.fillStyle = "black";
+     ctx.translate(250 + Math.cos(angle + arc / 2) * textRadius, 
+                   250 + Math.sin(angle + arc / 2) * textRadius);
+     ctx.rotate(angle + arc / 2 + Math.PI / 2);
+     var text = options[i];
+     ctx.fillText(text, -ctx.measureText(text).width / 2, 0);
+     ctx.restore();
+   } 
+
+   //Arrow
+   ctx.fillStyle = "black";
+   ctx.beginPath();
+   ctx.moveTo(250 - 4, 250 - (outsideRadius + 5));
+   ctx.lineTo(250 + 4, 250 - (outsideRadius + 5));
+   ctx.lineTo(250 + 4, 250 - (outsideRadius - 5));
+   ctx.lineTo(250 + 9, 250 - (outsideRadius - 5));
+   ctx.lineTo(250 + 0, 250 - (outsideRadius - 13));
+   ctx.lineTo(250 - 9, 250 - (outsideRadius - 5));
+   ctx.lineTo(250 - 4, 250 - (outsideRadius - 5));
+   ctx.lineTo(250 - 4, 250 - (outsideRadius + 5));
+   ctx.fill();
+ }
+}
+
+function spin() {
+
+ spinAngleStart = Math.random() * 10 + 10;
+ spinTime = 0;
+ spinTimeTotal = Math.random() * 3 + 4 * 1000;
+ rotateWheel();
+}
+
+function rotateWheel() {
+ spinTime += 10;
+ if(spinTime >= spinTimeTotal) {
+   stopRotateWheel();
+   return;
+ }
+ var spinAngle = spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
+ startAngle += (spinAngle * Math.PI / 180);
+ drawRouletteWheel();
+ spinTimeout = setTimeout('rotateWheel()', 30);
+}
+
+function stopRotateWheel() {
+ clearTimeout(spinTimeout);
+ var degrees = startAngle * 180 / Math.PI + 90;
+ var arcd = arc * 180 / Math.PI;
+ var index = Math.floor((360 - degrees % 360) / arcd);
+ ctx.save();
+ ctx.font = 'bold 30px Helvetica, Arial';
+ var text = options[index]
+
+ document.getElementById('selectedDesk').value = text; 
+
+  text = 'Desk #' + text;
+
+ ctx.fillText(text, 250 - ctx.measureText(text).width / 2, 250 + 10);
+ ctx.restore();
+}
+
+function easeOut(t, b, c, d) {
+ var ts = (t/=d)*t;
+ var tc = ts*t;
+ return b+c*(tc + -3*ts + 3*t);
+}
+
+
+function exportToExcel() {
+  const bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+
+  // Convert the bookingArray to a format suitable for Excel (e.g., an array of arrays)
+  const excelData = bookingArray.map(booking => [booking.deskNum, booking.office, booking.floor, booking.startDate, booking.username]);
+
+  // Create a new workbook
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+  // Add the worksheet to the workbook
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'DeskBookings');
+
+  // Save the workbook to a file
+  XLSX.writeFile(workbook, 'DeskBookings.xlsx');
+}
+
+// ###############################################################################
+// ################################# OTHER SCRIPT ################################
+// ###############################################################################
+
+let seconds = 0;
+setInterval(() => {
+seconds++;
+const minutes = Math.floor(seconds / 60);
+const remainingSeconds = seconds % 60;
+const formattedTime = `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+timerElement.textContent = formattedTime;
+}, 1000);
+
+const timerElement = document.getElementById('timer');
+// Set the default value of the date input to today's date
+const today = new Date().toISOString().slice(0, 16);
+
+document.addEventListener('DOMContentLoaded', function() {
+
+var desiredReferer = 'login.html';
+if (document.referrer.indexOf(desiredReferer) === -1) {
+    alert('Access denied. Please access from the specified page.');
+    window.location.href = 'login.html';
+}
+
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('bookingDate').value = today;
+// Set the min attribute of the date input to today
+document.getElementById('bookingDate').min = today;
+// Calculate the next month
+const nextMonth = new Date();
+nextMonth.setMonth(nextMonth.getMonth() + 1);
+const nextMonthString = nextMonth.toISOString().split('T')[0];
+// Set the max attribute of the date input to the last day of the next month
+document.getElementById('bookingDate').max = nextMonthString.substring(0, 7) + '-31';
+locationImage.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Aviva_Logo.svg/1280px-Aviva_Logo.svg.png';
+});
+
+// ###############################################################################
+// ########################### GENERATE REPORTS ##################################
+// ###############################################################################
+
+function emailReport(){
+const reportContainer = document.getElementById('reportText');
+const reportTitle = document.getElementById('reportTitle');
+  // Create a mailto URL
+  const subject = encodeURIComponent(reportTitle.textContent);
+  const body = subject + '/n' + encodeURIComponent(reportContainer.textContent);
+  const mailtoURL = `mailto:?subject=${subject}&body=${body}`;
+  // Open the default email client with the mailto URL
+  window.location.href = mailtoURL;
+}
+
+function generateDeskBookingReportToday() {
+    const reportContainer = document.getElementById('reportText');
+    const reportTitle = document.getElementById('reportTitle');
+    let bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+    reportContainer.innerHTML = "";
+    reportTitle.innerHTML = "Desk Booking Report For Today";
+    if (bookingArray.length === 0) {
+        const noBookingMessage = document.createElement('p');
+        noBookingMessage.textContent = 'No desks have been booked.';
+        reportContainer.appendChild(noBookingMessage);
+    } else {
+        // Filter bookings for the current date
+        const currentDate = new Date();
+        const formattedCurrentDate = formatDate(currentDate.toISOString().split('T')[0]);
+        const todayBookings = bookingArray.filter(booking => booking.startDate === formattedCurrentDate);
+        if (todayBookings.length === 0) {
+            const noBookingMessage = document.createElement('p');
+            noBookingMessage.textContent = `No desks have been booked for ${formattedCurrentDate}.`;
+            reportContainer.appendChild(noBookingMessage);
+        } else {
+            // Sort today's bookings by desk number
+            todayBookings.sort((a, b) => a.deskNum - b.deskNum);
+            const bookingList = document.createElement('ul');
+            todayBookings.forEach((booking, index) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `Booking #${index + 1}: Desk ${booking.deskNum} at ${booking.office} office - Floor ${booking.floor} on ${booking.startDate} by ${booking.username}`;
+                bookingList.appendChild(listItem);
+            });
+            reportContainer.appendChild(bookingList);
+        }
+    }
+    // Append the report container to the body or any other desired element
+}
+function generateDeskBookingReportYesterday() {
+    const reportContainer = document.getElementById('reportText');
+    const reportTitle = document.getElementById('reportTitle');
+    let bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+    reportContainer.innerHTML = "";
+    reportTitle.innerHTML = "Desk Booking Report for Yesterday";
+    if (bookingArray.length === 0) {
+        const noBookingMessage = document.createElement('p');
+        noBookingMessage.textContent = 'No desks have been booked.';
+        reportContainer.appendChild(noBookingMessage);
+    } else {
+        // Calculate yesterday's date
+        const currentDate = new Date();
+        const yesterday = new Date(currentDate);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const formattedYesterday = formatDate(yesterday.toISOString().split('T')[0]);
+        // Filter bookings for yesterday
+        const yesterdayBookings = bookingArray.filter(booking => booking.startDate === formattedYesterday);
+        if (yesterdayBookings.length === 0) {
+            const noBookingMessage = document.createElement('p');
+            noBookingMessage.textContent = `No desks have been booked for ${formattedYesterday}.`;
+            reportContainer.appendChild(noBookingMessage);
+        } else {
+            // Sort yesterday's bookings by desk number
+            yesterdayBookings.sort((a, b) => a.deskNum - b.deskNum);
+            const bookingList = document.createElement('ul');
+            yesterdayBookings.forEach((booking, index) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `Booking #${index + 1}: Desk ${booking.deskNum} at ${booking.office} office - Floor ${booking.floor} on ${booking.startDate}`;
+                bookingList.appendChild(listItem);
+            });
+            reportContainer.appendChild(bookingList);
+        }
+    }
+    // Append the report container to the body or any other desired element
+}
+function generateDeskBookingReportTomorrow() {
+    const reportContainer = document.getElementById('reportText');
+    const reportTitle = document.getElementById('reportTitle');
+    let bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+    reportContainer.innerHTML = "";
+    reportTitle.innerHTML = "Desk Booking Report for Tomorrow";
+    if (bookingArray.length === 0) {
+        const noBookingMessage = document.createElement('p');
+        noBookingMessage.textContent = 'No desks have been booked.';
+        reportContainer.appendChild(noBookingMessage);
+    } else {
+        // Filter bookings for tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const formattedTomorrow = formatDate(tomorrow.toISOString().split('T')[0]);
+        const tomorrowBookings = bookingArray.filter(booking => booking.startDate === formattedTomorrow);
+
+        if (tomorrowBookings.length === 0) {
+            const noBookingMessage = document.createElement('p');
+            noBookingMessage.textContent = `No desks have been booked for ${formattedTomorrow}.`;
+            reportContainer.appendChild(noBookingMessage);
+        } else {
+            // Sort tomorrow's bookings by desk number
+            tomorrowBookings.sort((a, b) => a.deskNum - b.deskNum);
+
+            const bookingList = document.createElement('ul');
+            tomorrowBookings.forEach((booking, index) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `Booking #${index + 1}: Desk ${booking.deskNum} at ${booking.office} office - Floor ${booking.floor} on ${booking.startDate}`;
+                bookingList.appendChild(listItem);
+            });
+            reportContainer.appendChild(bookingList);
+        }
+    }
+    // Append the report container to the body or any other desired element
+}
+function generateDeskBookingReportThisWeek() {
+    const reportContainer = document.getElementById('reportText');
+    const reportTitle = document.getElementById('reportTitle');
+    let bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+
+    reportContainer.innerHTML = "";
+    reportTitle.innerHTML = "Desk Booking Report for This Week";
+
+    if (bookingArray.length === 0) {
+        const noBookingMessage = document.createElement('p');
+        noBookingMessage.textContent = 'No desks have been booked.';
+        reportContainer.appendChild(noBookingMessage);
+    } else {
+        // Filter bookings for this week
+        const currentDate = new Date();
+        const startOfWeek = new Date(currentDate.setDate(currentDate.getDate() - currentDate.getDay()));
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(endOfWeek.getDate() + 6);
+
+        const formattedStartDate = formatDate(startOfWeek.toISOString().split('T')[0]);
+        const formattedEndDate = formatDate(endOfWeek.toISOString().split('T')[0]);
+
+        const weekBookings = bookingArray.filter(
+            booking => booking.startDate >= formattedStartDate && booking.startDate <= formattedEndDate
+        );
+
+        if (weekBookings.length === 0) {
+            const noBookingMessage = document.createElement('p');
+            noBookingMessage.textContent = `No desks have been booked for this week (${formattedStartDate} to ${formattedEndDate}).`;
+            reportContainer.appendChild(noBookingMessage);
+        } else {
+            // Sort week's bookings by desk number
+            weekBookings.sort((a, b) => a.deskNum - b.deskNum);
+
+            const bookingList = document.createElement('ul');
+            weekBookings.forEach((booking, index) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `Booking #${index + 1}: Desk ${booking.deskNum} at ${booking.office} office - Floor ${booking.floor} on ${booking.startDate}`;
+                bookingList.appendChild(listItem);
+            });
+            reportContainer.appendChild(bookingList);
+        }
+    }
+    // Append the report container to the body or any other desired element
+}
+function generateDeskBookingReport() {
+    const reportContainer = document.getElementById('reportText');
+    const reportTitle = document.getElementById('reportTitle');
+    let bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+
+    reportContainer.innerHTML = "";
+    reportTitle.innerHTML = "Desk Booking Report";
+
+    if (bookingArray.length === 0) {
+        const noBookingMessage = document.createElement('p');
+        noBookingMessage.textContent = 'No desks have been booked.';
+        reportContainer.appendChild(noBookingMessage);
+    } else {
+        // Sort bookingArray by the startDate in ascending order
+        bookingArray.sort((a, b) => new Date(a.startDate).toLocaleString().localeCompare(new Date(b.startDate).toLocaleString()));
+        const bookingList = document.createElement('ul');
+        bookingArray.forEach((booking, index) => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `Booking #${index + 1}: Desk ${booking.deskNum} at ${booking.office} office - Floor ${booking.floor} on ${booking.startDate}`;
+            bookingList.appendChild(listItem);
+        });
+        reportContainer.appendChild(bookingList);
+    }
+    // Append the report container to the body or any other desired element
+}
+
+
+
+// ##############################################################################
+// ########################### DESK BOOKINGS  ###################################
+// ############################################################################## 
+
+function bookDesk() {
+if (validateForm()) {
+  closeRandomDeskGen();
+hideMap();
+const deskSelect = document.getElementById('desk');
+const deskNum = document.getElementById('selectedDesk').value;
+const office = document.getElementById('office').value;
+const floor = document.getElementById('floor').value;
+const usernameElement = document.getElementById('username');
+const username = usernameElement.innerHTML.toLowerCase();
+const rawStartDate = document.getElementById('bookingDate').value;
+const confirmationMessage = document.getElementById('confirmationMessage');
+const startDate = formatDate(rawStartDate);
+const selectedDeskNumber = deskSelect.value;
+let bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+confirmationMessage.innerText = `Desk #${deskNum} booked at ${office} office - Floor ${floor} on ${startDate} for ${username}.`;
+const bookingInfo = {deskNum: deskNum, office: office, floor: floor, startDate: startDate, username: username};
+bookingArray.push(bookingInfo);
+localStorage.setItem('bookingArray', JSON.stringify(bookingArray));
+showConfirmationPopup();
+toggleBurgerBarVisibility();
+switch (office) { //Display confirmation office image
+
+  case "Eastleigh":
+  confirmationImage.src = 'https://careers.aviva.co.uk/content/uploads/2019/10/BF5TFT-1-1400x968.jpg'
+    break;
+
+  case "Birmingham":
+  confirmationImage.src = 'https://careers.aviva.co.uk/content/uploads/2022/06/shutterstock_203610229-Large.jpeg'
+    break;
+
+  case "Hoxton":
+  confirmationImage.src = 'https://static.aviva.io/content/dam/aviva-investors/main/assets/about/company-updates/2021/09/climate-transition-real-assets-fund/hoxton-office-for-climate-transition.jpg'
+    break;
+  case "Leatherhead":
+  confirmationImage.src = 'https://careers.aviva.co.uk/content/uploads/2021/02/Leatherhead-1400x930.jpg'
+    break;
+  case "Leeds":
+  confirmationImage.src = 'https://www.thebusinessdesk.com/assets2/_files/cached/jan_10/500/businessdesk__1263368095_Broadcasting_Place,_leeds.jpg'
+    break;
+  case "Manchester":
+  confirmationImage.src = 'https://careers.aviva.co.uk/content/uploads/2022/06/shutterstock_1072210547-Large.jpeg'
+    break;
+  case "Worthing":
+  confirmationImage.src = 'https://careers.aviva.co.uk/content/uploads/2022/06/shutterstock_1167434482-Large.jpeg'
+    break;
+  default:
+  confirmationImage.src = ''
+    break;
+}
+}
+}
+
+function cancelDesk() {
+  if (validateCancel()) {
+        let bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+        const deskNumInput = prompt('Enter the Desk Number to cancel:');
+    // Check if the user clicked Cancel or entered an empty string
+    if (deskNumInput === null || deskNumInput.trim() === '') {
+        alert('Invalid input. Desk cancellation aborted.');
+        return;
+    }
+      const deskNum = deskNumInput.trim();
+        const office = document.getElementById('office').value;
+        const floor = document.getElementById('floor').value;
+        const rawStartDate = document.getElementById('bookingDate').value;
+        const cancelDate = formatDate(rawStartDate);
+        const usernameElement = document.getElementById('username');
+const username = usernameElement.innerHTML.toLowerCase();
+        // Find the index of the booking to cancel in the bookingArray
+        const indexToCancel = bookingArray.findIndex(booking =>
+            booking.deskNum === deskNum &&
+            booking.office === office &&
+            booking.floor === floor &&
+            booking.startDate === cancelDate && 
+            booking.username === username
+        );
+
+        if (indexToCancel !== -1) {
+            // Remove the booking from the array
+            bookingArray.splice(indexToCancel, 1);
+
+            // Update the local storage
+            localStorage.setItem('bookingArray', JSON.stringify(bookingArray));
+
+            alert(`Desk #${deskNum} on ${cancelDate} canceled successfully.`);
+            clearForm();
+        } else {
+            alert(`No booking found for Desk #${deskNum} on ${cancelDate}.`);
+        }
+
+      }
+}
+
+
+// ##############################################################################
+// ########################### POPUPS & FUNCTIONS ###############################
+// ##############################################################################
+function formatDate(rawDate) {
+const date = new Date(rawDate);
+const day = date.getDate().toString().padStart(2, '0');
+const month = (date.getMonth() + 1).toString().padStart(2, '0');
+const year = date.getFullYear();
+return `${day}-${month}-${year}`;
+}
+function toggleMenu() {
+const menu = document.querySelector('.burger-bar .menu');
+menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
+}
+function toggleBurgerBarVisibility() {
+const burgerBar = document.querySelector('.burger-bar');
+const confirmationPopup = document.getElementById('confirmationPopup');
+burgerBar.style.display = confirmationPopup.style.display === 'none' ? 'flex' : 'none';
+}
+function closeConfirmationPopup() {
+const popup = document.getElementById('confirmationPopup');
+popup.style.display = 'none';
+toggleBurgerBarVisibility();
+clearForm();
+showMap();
+}
+function showBurgerBar() {
+const burgerBar = document.querySelector('.burger-bar');
+burgerBar.style.display = 'flex';
+}
+function hideBurgerBar() {
+const burgerBar = document.querySelector('.burger-bar');
+burgerBar.style.display = 'none';
+}
+function openSettings() {
+const settingsPopup = document.getElementById('settingsPopup');
+settingsPopup.style.display = 'block';
+hideBurgerBar();
+hideMap();
+}
+function closeSettingsPopup() {
+const settingsPopup = document.getElementById('settingsPopup');
+settingsPopup.style.display = 'none';
+showBurgerBar();
+showMap();
+}
+function hideMap(){
+  const map = document.getElementById('map');
+map.style.display = 'none';
+}
+function showMap(){
+  const map = document.getElementById('map');
+map.style.display = 'block';
+}
+
+function spinAgain(){
+  
+  getOptions();
+  drawRouletteWheel();
+  spin();
+}
+function openRandomDeskGen()
+{
+  
+  if (!validateUser()) {
+return false;
+}
+  if (deskRemainingInteger > 0) {
+  hideMap();
+  const randomDeskPopup = document.getElementById('randomDeskPopup');
+  randomDeskPopup.style.display = 'block';
+
+  getOptions();
+  drawRouletteWheel();
+  
+  hideBurgerBar();
+  spin();
+  }
+  else
+  {
+    alert('Sorry there are no available desks, all bets are off');
+  }
+
+}
+
+function closeRandomDeskGen()
+{
+  const randomDeskPopup = document.getElementById('randomDeskPopup');
+  randomDeskPopup.style.display = 'none';
+  showBurgerBar();
+  showMap();
+}
+
+function openGenerateReport() {
+const generateReportPopup = document.getElementById('generateReportPopup');
+generateReportPopup.style.display = 'block';
+hideBurgerBar();
+generateDeskBookingReport();
+hideMap();
+}
+function closeGenerateReport() {
+const generateReportPopup = document.getElementById('generateReportPopup');
+generateReportPopup.style.display = 'none';
+showBurgerBar();
+showMap();
+}
+function showConfirmationPopup()
+{
+  const popup = document.getElementById('confirmationPopup');
+popup.style.display = 'block';
+
+
+}
+// ##############################################################################
+// ########################### SETTINGS #########################################
+// ##############################################################################
+
+function toggleDarkMode() {
+  const body = document.body;
+  body.classList.toggle('dark-mode');
+  // Toggle dark mode for the container element
+  const container = document.querySelector('.container');
+  container.classList.toggle('dark-mode');
+
+  const bookingButton = document.querySelector('.bookingButton');
+  bookingButton.classList.toggle('dark-mode');
+  // Toggle dark mode for popups
+  const popups = document.querySelectorAll('.popup-content');
+  popups.forEach(popup => popup.classList.toggle('dark-mode'));
+}
+
+function increaseFontSize() {
+  const allElements = document.querySelectorAll('*');
+  allElements.forEach(element => {
+    let currentSize = parseInt(window.getComputedStyle(element).fontSize);
+
+    if (currentSize < 35) {
+      currentSize += 3;
+      element.style.fontSize = currentSize + 'px';
+    }
+  });
+}
+function decreaseFontSize() {
+  const allElements = document.querySelectorAll('*');
+  allElements.forEach(element => {
+    let currentSize = parseInt(window.getComputedStyle(element).fontSize);
+
+    if (currentSize > 10) {
+      currentSize -= 3;
+      element.style.fontSize = currentSize + 'px';
+    }
+  });
+}
+
+// ##############################################################################
+// ########################### CLEAR FORM #######################################
+// ##############################################################################
+
+function clearForm() {
+document.getElementById('office').value = '';
+let floor = document.getElementById('floor');
+floor.innerHTML = '';
+
+document.getElementById('desk').value = '';
+document.getElementById('selectedDesk').value = '';
+// Clear desks available label
+const desksAvailableLabel = document.getElementById('desksAvailable');
+desksAvailableLabel.innerHTML = '';
+// Clear timer
+const timerElement = document.getElementById('timer');
+timerElement.textContent = '00:00';
+// Remove all desk icons from the deskGrid
+const deskGrid = document.getElementById('deskGrid');
+deskGrid.innerHTML = '';
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('bookingDate').value = today;
+createMap();
+const desksRemaining = document.getElementById('desksRemaining');
+desksRemaining.innerHTML = '';
+}
+     
+// ##############################################################################
+// ########################### VALIDATION #######################################
+// ##############################################################################
+function validateForm() {
+  if (!validateBooking()) {
+return false;
+}
+
+if (!validateDate()) {
+return false;
+}
+if (!validateUser()) {
+return false;
+}
+
+const selectedOffice = document.getElementById('office').value;
+const selectedFloor = document.getElementById('floor').value;
+const selectedDesk = document.getElementById('selectedDesk').value;
+
+if (office === 'NULL' || floor === '0' || selectedDesk === '') {
+alert('Please select an office, floor, and desk before booking.');
+return false;
+}
+return true;
+}
+function validateCancel() {
+const office = document.getElementById('office').value;
+const floor = document.getElementById('floor').value;
+if (office === 'NULL' || floor === '0') {
+alert('Please select an office and floor to cancel a desk.');
+return false;
+}
+return true;
+}
+
+
+function validateBooking()
+{
+const selectedOffice = document.getElementById('office').value;
+const selectedFloor = document.getElementById('floor').value;
+const selectedDesk = document.getElementById('selectedDesk').value;
+let bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+const usernameElement = document.getElementById('username');
+const username = usernameElement.innerHTML.toLowerCase();
+const rawStartDate = document.getElementById('bookingDate').value;
+const startDate = formatDate(rawStartDate);
+
+const isDeskBooked = bookingArray.some(booking => 
+            booking.deskNum  == selectedDesk && 
+            booking.floor == selectedFloor && 
+            booking.office == selectedOffice && 
+            booking.startDate == startDate
+        );
+
+        
+        if (isDeskBooked) {
+           alert('This is a booked desk. Unable to proceed');
+           return false;
+            }   
+ 
+return true;
+
+}
+function validateUser() {
+  let bookingArray = JSON.parse(localStorage.getItem('bookingArray')) || [];
+
+  const usernameElement = document.getElementById('username');
+  const username = usernameElement.innerHTML.toLowerCase();
+  const rawStartDate = document.getElementById('bookingDate').value;
+  const startDate = formatDate(rawStartDate);
+
+  const bookedDesk = bookingArray.find(booking =>
+    booking.startDate === startDate && booking.username === username
+  );
+
+  if (bookedDesk) {
+    const alertMessage = `You have already booked a desk for this date:\n
+                          Date: ${bookedDesk.startDate}\n
+                          Office: ${bookedDesk.office}\n
+                          Floor: ${bookedDesk.floor}\n
+                          Desk Number: ${bookedDesk.deskNum}`;
+    alert(alertMessage);
+    return false;
+  }
+
+  return true;
+}
+function validateDate() {
+const bookingDate = document.getElementById('bookingDate').value;
+// Convert the selected date to a Date object
+const selectedDate = new Date(`${bookingDate}`);
+// Get the current date and time
+const currentDate = new Date();
+currentDate.setHours(0, 0, 0, 0); // Set time to midnight for comparison
+if (selectedDate < currentDate) {
+alert('Booking date must be in the future. Please select a valid date and time.');
+return false;
+}
+return true;
+}
+
+
+</script>
+
+<script type="module"> 
+let data; 
+async function fetchData() {
+const response = await fetch('data.json');
+data = await response.json();
+}
+fetchData();
+
+function changeFloorDropDown() {
+const selectedOffice = document.getElementById('office').value;
+const floorSelect = document.getElementById('floor');
+const selectedOfficeData = data.office.find(o => o.name === selectedOffice);
+
+floorSelect.innerHTML = '';
+if (selectedOfficeData) {
+
+for (let i = 0; i < selectedOfficeData.desks.length; i++) {
+const option = document.createElement('option');
+option.value = i + 1;
+option.textContent = `${i + 1}`;
+floorSelect.appendChild(option);
+}
+}
+updateDesksAvailable();
+}
+
+function updateDesksAvailable() {
+const desksAvailableLabel = document.getElementById('desksAvailable');
+const desksRemaining = document.getElementById('desksRemaining');
+const desksBooked = document.getElementById('desksBooked');
+const selectedOffice = document.getElementById('office').value;
+const selectedFloor = document.getElementById('floor').value -1 ;
+const selectedOfficeData = data.office.find(o => o.name === selectedOffice);
+if (selectedOfficeData) {
+const selectedFloorDesks = selectedOfficeData.desks[selectedFloor];
+desksAvailableLabel.innerHTML = `Total Desks: ${selectedFloorDesks}`;          
+} else{desksAvailableLabel.innerHTML = ""; desksRemaining.innerHTML = "" ; desksBooked.innerHTML = "";}
+}
+
+
+
+
+document.getElementById('office').onchange = changeFloorDropDown;
+document.getElementById('floor').onchange = updateDesksAvailable;
+document.getElementById('office').addEventListener('change', createMap);
+document.getElementById('floor').addEventListener('change', createMap);
+document.getElementById('bookingDate').addEventListener('change', createMap);
+document.getElementById('office').addEventListener('change', function () {createMap(); });
+
+
+</script>
+
+<script> src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"</script>
+
+
+
+</body>
+</html>
