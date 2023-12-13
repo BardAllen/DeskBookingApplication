@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="Other Images/faviconICO.ico" type="image/png">
+  <title>User Login</title>
+  <link rel="stylesheet" type="text/css" href="styles.css"> 
+</head>
+
+<body>
+  <div class="container">
+    <img src="Other Images/Aviva_Logo.png" alt="Aviva Logo" class="location-image" id="locationImage">
+    
+    <div class="login-container">
+      <h2>Desk Booking Login</h2>
+      <form id="loginForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <button type="button" style="background-color: greenyellow;"  class="button-89" onclick="loginUser()">Login</button>
+      </form>
+
+      <div class="options">
+        <a href="#forgot_password" onclick="showForgotPassword()">Forgot Password?</a>
+      </div>
+    </div>
+
+    <div class="forgot-password-container" style="display: none;">
+      <h2>Forgot Password</h2>
+      <form id="forgotPasswordForm">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+        <button type="button" class="button-89" style="background-color: greenyellow;"  onclick="sendResetLink()">Show Details</button>
+        <div id="displayContainer" style="display: none;"></div>
+      </form>
+
+      <div class="options">
+        <a href="#" onclick="showLoginForm()">Back to Login</a>
+      </div>
+    </div>
+
+    <div class="create-account-container" style="display: none;">
+    </div>
+  </div>
+
+  <script>
+    // Dummy user data for desk booking purposes
+    const dummyUsers = [];
+for (let i = 1; i <= 100; i++) {
+  const username = `user${i}`;
+  const password = 'pass'; 
+  const email = `user${i}@user.com`
+  dummyUsers.push({username, password, email});
+}
+
+    function showForgotPassword() {
+      document.querySelector('.login-container').style.display = 'none';
+      document.querySelector('.create-account-container').style.display = 'none';
+      document.querySelector('.forgot-password-container').style.display = 'block';
+    }
+
+    function showLoginForm() {
+      document.querySelector('.forgot-password-container').style.display = 'none';
+      document.querySelector('.create-account-container').style.display = 'none';
+      document.querySelector('.login-container').style.display = 'block';
+    }
+
+    function loginUser() {
+      const enteredUsername = document.getElementById('username').value;
+      const enteredPassword = document.getElementById('password').value;
+
+      const matchedUser = dummyUsers.find(user => user.username === enteredUsername && user.password === enteredPassword);
+
+      if (matchedUser) {
+        localStorage.setItem('loggedInUsername', enteredUsername);
+        window.location.href = 'Desk Booking.html';
+      } else {
+        alert('Invalid username or password');
+      }
+
+      return false; 
+    }
+
+ function sendResetLink() {
+  const enteredEmail = document.getElementById('email').value;
+  const matchedUser = dummyUsers.find(user => user.email === enteredEmail);
+  const displayContainer = document.getElementById('displayContainer');
+  if (matchedUser) {
+    displayContainer.innerHTML = `<p>Username: ${matchedUser.username}</p><p>Password: ${matchedUser.password}</p>`;
+  } else {
+    displayContainer.innerHTML = '<p>Email not found. Please enter a registered email address.</p>';
+  }
+  displayContainer.style.display = 'block';
+}
+
+  </script>
+
+</body>
+
+</html>
