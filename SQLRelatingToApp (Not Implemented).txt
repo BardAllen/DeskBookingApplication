@@ -1,4 +1,4 @@
--- SQL Example Linked To Car Park Project
+-- SQL Example Linked To Desk Booking App
 
 drop table DesksBooked;
 
