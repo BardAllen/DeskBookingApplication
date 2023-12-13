@@ -9,7 +9,7 @@ CREATE TABLE DesksBooked (
     Office VARCHAR(255),
     StartDate DATE,
     Username VARCHAR(255)
-);demo
+);
 
 INSERT INTO DesksBooked (DeskNum, Floor, Office, StartDate, Username)
 VALUES
