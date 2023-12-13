@@ -11,9 +11,9 @@ Welcome to the Desk Booking Application! This application allows users to effici
   - [Booking a Desk](#booking-a-desk)
   - [Generate Reports](#generate-reports)
   - [I'm Feeling Lucky](#im-feeling-lucky)
-- [App Settings](#app-settings)
-- [Validation Rules](#validation-rules)
-- [Archive](#archive)
+  - [App Settings](#app-settings)
+  - [Validation Rules](#validation-rules)
+  - [Archive](#archive)
 
 ## How to Use the App
 
@@ -66,7 +66,7 @@ To ensure fair and effective desk booking, the following validation rules are in
 
 ### I'm Feeling Lucky (#im-feeling-lucky)
 
-- If you're feeling spontaneous or unsure, use the "I'm Feeling Lucky" button to randomly get assigned a desk. (You aren't obliged to select the desk and can always let it rideeeee)
+- If you're feeling spontaneous or unsure, use the "I'm Feeling Lucky" button to randomly get assigned an available desk. (You aren't obliged to select the desk and can always let it rideeeee)
 
 ## App Settings (#app-settings)
 
@@ -81,7 +81,7 @@ To ensure fair and effective desk booking, the following validation rules are in
 
 
 ### Archive (#archive) 
-Included some early developments of tool to evidence dev/code observation. (Likely wont work correctly due to json code changes/filepaths)
+Included some early developments of tool to evidence dev/improvement. (Likely wont work correctly due to json/filepaths changes)
 
 A - Create a starter desk booking app - app creation 17/11/23
 B - Formatting Changes
@@ -115,6 +115,6 @@ V3.0 backup
 
 ## Feedback and Support
 
-For any issues, feedback, or inquiries, please contact our support team at support@deskbookingapp.com.
+For any issues, feedback, or inquiries, please contact our support team at support@noonewillgetbacktoyou.com.
 
 Thank you for using the Desk Booking Application!
