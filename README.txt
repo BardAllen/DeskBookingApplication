@@ -53,6 +53,9 @@ To ensure fair and effective desk booking, the following validation rules are in
 4. **No Overlapping Bookings:**
    - Users cannot book a desk that is already reserved by another user on the same day.
 
+5. **Can only book within 2 months of current date:**
+   - users cannot book a desk over 2 months away, this is limited on the calendar.
+
 ## Generate Reports (#generate-reports)
 
 1. **Access Reports:**
@@ -106,7 +109,7 @@ T - json changes
 U - backup save
 V - backup save
 W - burger bar addition 
-X - time stamp removal due to floorplan focus, tiles generating based on floor
+X - booking time removal due to floorplan focus, tiles generating based on floor/desk number
 Y - Contact us page created
 Z - backup save
 V1.0-V1.5 - Settings button updates, Generate reports, cancel desk, contact us removal. Signed off as working with just generated tiles, leaftlet investigation 
