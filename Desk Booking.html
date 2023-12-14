@@ -31,7 +31,7 @@
 </div>
 </div>
 
-<h2>Desk Booking</h2>
+<h2 style="font-size: 50px;">Desk Booking</h2>
 
  <div class="image-container">
   <div class="hover-content">
@@ -64,21 +64,22 @@
   <div class="input-container">
     <label for="bookingDate">Booking Date</label>
     <div class="time-inputs">
-      <input style="text-align: center; font-size: 20px; font-weight: bold; width: 400px" type="date" id="bookingDate" required>
+      <input style="text-align: center; font-size: 20px; font-weight: bold;" type="date" id="bookingDate" required>
     </div>
   </div>
 </div>
 
 <div class="row">
-<label id="desksAvailable"></label>
-<label id="desksBooked"></label>
-<label id="desksRemaining"></label>
+<label class="infoLabels" id="desksAvailable">Total Desks:</label>
+<label class="infoLabels" id="desksBooked">Number Booked:</label>
+<label class="infoLabels" id="desksRemaining">Desks Remaining:</label>
 </div>
 
 <div class="row">
-<label id="selectedDeskLabel">Selected Desk</label>
-<input  type="text" id="selectedDesk" readonly>
+<label class="infoLabels" id="selectedDeskLabel">Selected Desk</label>
+<input style="display:none;" type="text" id="selectedDesk" readonly>
 </div>
+
 
 <div class="button-container">
 <button class="bookingButton" onclick="bookDesk()" role="button">Book Desk</button>
@@ -161,7 +162,7 @@
   </div>
 
     <label style="font-size: 40px" id="reportTitle"></label>
-    <div style="height: 400px; overflow-y: auto;" id="scrollableBox">
+    <div style="height: 250px; overflow-y: auto;" id="scrollableBox">
       <label id="reportText"></label>
     </div>
 
@@ -195,6 +196,8 @@ const loggedInUsername = localStorage.getItem('loggedInUsername');
 if (loggedInUsername) {
   document.getElementById('username').innerText = loggedInUsername;
 }
+
+
 
 //##############################################################################
 //######################## LEAFLET.JS  #########################################
@@ -1580,6 +1583,7 @@ function createMarkerClickHandler(marker, deskNumber) {
   return function () {
     if (!marker._icon.classList.contains('booked-marker')) {
       document.getElementById('selectedDesk').value = deskNumber;
+      document.getElementById('selectedDeskLabel').innerHTML = 'Selected Desk: #' + deskNumber;
     }
   };
 }
@@ -2070,6 +2074,7 @@ function stopRotateWheel() {
  ctx.font = 'bold 30px Helvetica, Arial';
  var text = options[index]
  document.getElementById('selectedDesk').value = text; 
+ document.getElementById('selectedDeskLabel').value = 'Selected Desk: #' + text; 
  text = 'Desk #' + text;
  ctx.fillText(text, 250 - ctx.measureText(text).width / 2, 250 + 10);
  ctx.restore();
@@ -2692,15 +2697,17 @@ let floor = document.getElementById('floor');
 floor.innerHTML = '';
 document.getElementById('desk').value = '';
 document.getElementById('selectedDesk').value = '';
-const desksAvailableLabel = document.getElementById('desksAvailable');
-desksAvailableLabel.innerHTML = '';
+document.getElementById('selectedDeskLabel').innerHTML = 'Selected Desk: ';
+document.getElementById('desksAvailable').innerHTML = 'Total Desks:';
+document.getElementById('desksBooked').innerHTML = 'Number Booked:';
+document.getElementById('desksRemaining').innerHTML = 'Desks Remaining:';
+
 const deskGrid = document.getElementById('deskGrid');
 deskGrid.innerHTML = '';
 const today = new Date().toISOString().split('T')[0];
 document.getElementById('bookingDate').value = today;
 createMap();
-const desksRemaining = document.getElementById('desksRemaining');
-desksRemaining.innerHTML = '';
+
 }
      
 // ##############################################################################
