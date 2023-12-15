@@ -112,7 +112,7 @@ W - burger bar addition
 X - booking time removal due to floorplan focus, tiles generating based on floor/desk number
 Y - Contact us page created
 Z - backup save
-V1.0-V1.5 - Settings button updates, Generate reports, cancel desk, contact us removal. Signed off as working with just generated tiles, leaftlet investigation 
+V1.0-V1.5 - Settings button updates, Generate reports, cancel desk, contact us removal. Signed off as working with just generated tiles, leaflet investigation 
 V2.0 Leaflet implementation 
 V3.0 backup
 
