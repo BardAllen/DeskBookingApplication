@@ -69,7 +69,7 @@ To ensure fair and effective desk booking, the following validation rules are in
 
 ### I'm Feeling Lucky (#im-feeling-lucky)
 
-- If you're feeling spontaneous or unsure, use the "I'm Feeling Lucky" button to randomly get assigned an available desk. (You aren't obliged to select the desk and can always let it rideeeee)
+- If you're feeling spontaneous or unsure, use the "I'm Feeling Lucky" button to randomly get assigned an available desk. (You aren't obliged to book the desk and can always let it rideeeee)
 
 ## App Settings (#app-settings)
 
